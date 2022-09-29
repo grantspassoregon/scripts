@@ -8,18 +8,17 @@ from sympy.physics.units.systems.si import dimsys_SI
 import os
 import pandas
 import logging
-from dotenv import load_dotenv
 
 
 arcpy.env.parallelProcessingFactor = "100%"
 
-load_dotenv()
-PROJECT_DIR = os.getenv("PROJECT_DIR")
-GDB_NAME = os.getenv("GDB_NAME")
-WORKSPACE = os.getenv("WORKSPACE")
-ARCGIS_PROJECT = os.getenv("ARCGIS_PROJECT")
-LOG_FILE = os.getenv("LOG_FILE")
-CSV_FILE = os.getenv("CSV_FILE")
+# Customize these variables to paths on your system
+PROJECT_DIR = "C:/Users/erose/projects"
+GDB_NAME = "missing_sidewalks.gdb"
+WORKSPACE = "C:/Users/erose/projects/missing_sidewalks.gdb"
+ARCGIS_PROJECT = "P:/projects/sidewalks/sidewalks3.aprx"
+LOG_FILE = "P:/missing_sidewalks.log"
+CSV_FILE = "P:/missing_sidewalks_report.csv"
 
 # format log messages to include time before message
 logging.basicConfig(
