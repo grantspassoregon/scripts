@@ -84,24 +84,63 @@ cursor = arcpy.UpdateCursor("addresses")
 # street names
 
 # read street names from county registry into list
-street_names = []
-
-cursor = arcpy.SearchCursor("AuthorizedStreetNameTable")
-for row in cursor:
-    street = row.getValue("name")
-    street_names.append(street)
+# street_names = []
+#
+# cursor = arcpy.SearchCursor("AuthorizedStreetNameTable")
+# for row in cursor:
+#     street = row.getValue("name")
+#     street_names.append(street)
 
 # update field row if street name is valid
-cursor = arcpy.UpdateCursor("addresses")
-for row in cursor:
-    result = row.getValue("ROADNAME")
-    if result is not None and result in street_names:
-        row.setValue("StreetName", result)
-        cursor.updateRow(row)
-        logging.debug('Field is %s.", result')
-    else:
-        logging.debug("Field is None.")
-logging.info("All records processed.")
+# cursor = arcpy.UpdateCursor("addresses")
+# for row in cursor:
+#     result = row.getValue("ROADNAME")
+#     if result is not None and result in street_names:
+#         row.setValue("StreetName", result)
+#         cursor.updateRow(row)
+#         logging.debug('Field is %s.", result')
+#     else:
+#         logging.debug("Field is None.")
+# logging.info("All records processed.")
 
+# street type
+# street_types = {}
+#
+# cursor = arcpy.SearchCursor("StreetTypeDomain")
+# for row in cursor:
+#     abbr = row.getValue("Street_abb")
+#     name = row.getValue("Street_Typ")
+#     street_types.update({abbr: name})
+# logging.info("Street types loaded.")
+
+# update field row if street type is valid
+# cursor = arcpy.UpdateCursor("addresses")
+# for row in cursor:
+#     result = row.getValue("ROADTYPE")
+#     logging.info("Result is %s.", result)
+#     if result != None:
+#         upr = result.upper()
+#         if upr in street_types:
+#             row.setValue("St_PosTyp", street_types[upr])
+#             cursor.updateRow(row)
+#             logging.info("Field is %s.", street_types[upr])
+#     else:
+#         logging.debug("Field is None.")
+# logging.info("All records processed.")
+
+# complete street name
+for row in cursor:
+    predir = row.getValue("St_PreDir")
+    name = row.getValue("St_Name")
+    postyp = row.getValue("St_PosTyp")
+    result = None
+    if predir is not None:
+        result = predir + " " + name + " " + postyp
+    else:
+        result = name + " " + postyp
+    row.setValue("CompleteStreetName", result)
+    cursor.updateRow(row)
+    logging.debug("Field is %s.", result)
+logging.info("All records processed.")
 
 del cursor, row

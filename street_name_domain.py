@@ -74,7 +74,13 @@ logging.info("Project loaded.")
 # arcpy.management.AddCodedValueToDomain(
 #     ARCGIS_WORKSPACE, "StreetNames", "BEAKER", "BEAKER"
 # )
+# arcpy.management.AddCodedValueToDomain(
+#     ARCGIS_WORKSPACE, "StreetNames", "JUNE BUG", "JUNE BUG"
+# )
 arcpy.management.AddCodedValueToDomain(
-    ARCGIS_WORKSPACE, "StreetNames", "JUNE BUG", "JUNE BUG"
+    ARCGIS_WORKSPACE, "StreetNames", "FORMOSA", "FORMOSA"
+)
+arcpy.management.AddCodedValueToDomain(
+    ARCGIS_WORKSPACE, "StreetNames", "BEAVILLA", "BEAVILLA"
 )
 logging.info("Proposed roads added to domain.")
