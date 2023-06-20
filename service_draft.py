@@ -12,7 +12,7 @@ logging.basicConfig(
 )
 
 # path to base directory for draft projects
-draft_base = "O:/gisuserprojects/users/erikrose/service_drafts"
+base_path = "O:/gisuserprojects/users/erikrose/service_drafts"
 # path to template arpx projects for services
 agreements_path = "O:/gisuserprojects/users/erikrose/agreements/agreements.aprx"
 as_builts_path = "O:/gisuserprojects/users/erikrose/as_builts/as_builts.aprx"
@@ -56,7 +56,7 @@ class Draft:
         self.project = project
 
     def draft_service(self, path):
-        draft_dir = os.path.join(draft_base, self.name)
+        draft_dir = os.path.join(path, self.name)
         if not os.path.isdir(draft_dir):
             os.mkdir(draft_dir)
         files = os.listdir(draft_dir)
@@ -93,7 +93,7 @@ class Drafts:
     def __init__(self, records):
         self.records = records
 
-    def draft_service(self, path, sel="all"):
+    def draft_service(self, path=base_path, sel="all"):
         if sel == "all":
             for draft in self.records.values():
                 draft.draft_service(path)
