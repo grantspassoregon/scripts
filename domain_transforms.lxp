@@ -1,0 +1,66 @@
+# Culvert Shape
+When($feature.MAINSHAPE == 'Circular', 1,
+    $feature.MAINSHAPE == 'Horseshoe', 2,
+    $feature.MAINSHAPE == 'Oblong', 3,
+    $feature.MAINSHAPE == 'Rectangular', 4,
+    $feature.MAINSHAPE == 'Trapezoidal', 5,
+    $feature.MAINSHAPE == 'Triangular', 6,
+    $feature.MAINSHAPE == 'Squash', 7,
+    $feature.MAINSHAPE == 'Other', 100,
+    $feature.MAINSHAPE)
+
+# Asset Owner
+When($feature.AssetOwner_2019 == 'City of Grants Pass', 1,
+    $feature.AssetOwner_2019 == 'GPID', 2,
+    $feature.AssetOwner_2019 == 'State of Oregon', 3,
+    $feature.AssetOwner_2019 == 'Josephine County', 4,
+    $feature.AssetOwner_2019 == 'Federal Govt', 5,
+    $feature.AssetOwner_2019 == 'Private', 6,
+    $feature.AssetOwner_2019 == 'Unknown', 7,
+    $feature.AssetOwner_2019 == 'Other', 100,
+    $feature.AssetOwner_2019)
+
+# Data Source
+When($feature.DataSource == 'Existing GIS', 9,
+    $feature.DataSource == 'zExisting GIS', 9,
+    $feature.DataSource == 'Surveyed Point', 11,
+    $feature.DataSource == 'Surveyed Point CM Qual', 11,
+    $feature.DataSource == 'Field Worker', 10,
+    $feature.DataSource == 'zField Worker', 10,
+    $feature.DataSource == 'Assumed Logic', 14,
+    $feature.DataSource == 'As Built', 1,
+    $feature.DataSource == 'CAD As Built', 1,
+    $feature.DataSource == 'Aerial Photography', 6,
+    $feature.DataSource == 'Aerial Photograhy', 6,
+    $feature.DataSource == 'Street View Imagery', 13,
+    $feature.DataSource == 'GeoReffed PDF Constr Drwng', 8,
+    $feature.DataSource)
+
+# Catchment Boundary
+# Asset Type
+assettype = 1 # Catchment Boundary
+
+# Name
+name = $feature.SUB_BASIN_ID
+
+# Spatial Source
+spatialsource = 9 # Existing GIS
+
+# BMP Boundary
+# Asset Type
+When($feature.LOCDESC == 'POND', 2,
+    $feature.LOCDESC == 'DETENTION RETENTION POND', 2,
+    $feature.LOCDESC == 'DRAINAGE SWALE', 23,
+    $feature.LOCDESC == 'WETLAND', 7,
+    $feature.LOCDESC == 'DETENTION POND', 2,
+    $feature.LOCDESC == 'DETENTION SWALE', 23,
+    $feature.LOCDESC == 'Detention Swale', 23,
+    $feature.LOCDESC == 'STORMWATER SWALE', 23,
+    $feature.LOCDESC == 'DETENTION BIOSWALE', 23,
+    $feature.LOCDESC == 'DETENTION FACILITY', 2,
+    $feature.LOCDESC == 'Detention Pond', 2,
+    $feature.LOCDESC == 'MITIGATED WETLAND', 7,
+    $feature.LOCDESC == 'RETENTION POND', 30,
+    $feature.LOCDESC == 'STORMTECH UG DETENTION AREA', 2,
+    $feature.LOCDESC == 'STORMWATER DETENTION POND', 2,
+    $feature.LOCDESC)
