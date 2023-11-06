@@ -1,3 +1,12 @@
+# Inlet Type
+When($feature.INLETTYPE == "Curb Inlet Type \"B\"", 1,
+    $feature.INLETTYPE == "Pipe Inlet", 7,
+    $feature.INLETTYPE == "Inlet Type \"D\"", 7,
+    $feature.INLETTYPE == "Channel Inlet", 8,
+    Null)
+
+
+
 # Culvert Shape
 When($feature.MAINSHAPE == 'Circular', 1,
     $feature.MAINSHAPE == 'Horseshoe', 2,
@@ -8,6 +17,19 @@ When($feature.MAINSHAPE == 'Circular', 1,
     $feature.MAINSHAPE == 'Squash', 7,
     $feature.MAINSHAPE == 'Other', 100,
     $feature.MAINSHAPE)
+
+# Asset Manager
+# run after updating ownedby using Asset Owner
+When($feature.AssetManager == 'City of Grants Pass', 1,
+    $feature.AssetManager == 'GPID', 2,
+    $feature.AssetManager == 'State of Oregon', 3,
+    $feature.AssetManager == 'Josephine County', 4,
+    $feature.AssetManager == 'Federal Govt', 5,
+    $feature.AssetManager == 'Grants Pass Parks', 6,
+    $feature.AssetManager == 'Private', 7,
+    $feature.AssetManager == 'Unknown', 8,
+    $feature.AssetManager == 'Other', 100,
+    $feature.ownedby)
 
 # Asset Owner
 When($feature.AssetOwner_2019 == 'City of Grants Pass', 1,
@@ -20,21 +42,45 @@ When($feature.AssetOwner_2019 == 'City of Grants Pass', 1,
     $feature.AssetOwner_2019 == 'Other', 100,
     $feature.AssetOwner_2019)
 
+# Asset Status
+When($feature.AssetStatus_2019 == 'Proposed', 1,
+    $feature.AssetStatus_2019 == 'In Construction', 4,
+    $feature.AssetStatus_2019 == 'Active', 8,
+    $feature.AssetStatus_2019 == 'Abandoned', 32,
+    $feature.AssetStatus_2019 == 'Removed and Backfilled', 128,
+    $feature.AssetStatus_2019 == 'Inactive', 256,
+    Null)
+
 # Data Source
-When($feature.DataSource == 'Existing GIS', 9,
-    $feature.DataSource == 'zExisting GIS', 9,
-    $feature.DataSource == 'Surveyed Point', 11,
-    $feature.DataSource == 'Surveyed Point CM Qual', 11,
-    $feature.DataSource == 'Field Worker', 10,
-    $feature.DataSource == 'zField Worker', 10,
-    $feature.DataSource == 'Assumed Logic', 14,
+When(
     $feature.DataSource == 'As Built', 1,
     $feature.DataSource == 'CAD As Built', 1,
+    $feature.DataSource == 'GeoReffed CAD', 2,
+    $feature.DataSource == 'GeoReffed PDF High Qual', 3,
+    $feature.DataSource == 'GeoReffed PDF Low Qual', 3,
+    $feature.DataSource == 'zGPS 3 Foot Qual', 4,
+    $feature.DataSource == 'zGPS CM Qual', 4,
+    $feature.DataSource == 'zGPS Map Qual', 4,
     $feature.DataSource == 'Aerial Photography', 6,
     $feature.DataSource == 'Aerial Photograhy', 6,
-    $feature.DataSource == 'Street View Imagery', 13,
+    $feature.DataSource == 'CCTV and Sonde Locator', 7,
+    $feature.DataSource == 'CCTV Automated Increments', 7,
+    $feature.DataSource == 'CCTV Report', 7,
+    $feature.DataSource == 'CAD Constr Drwng', 8,
+    $feature.DataSource == 'Construction Drawing', 8,
     $feature.DataSource == 'GeoReffed PDF Constr Drwng', 8,
-    $feature.DataSource)
+    $feature.DataSource == 'Existing GIS', 9,
+    $feature.DataSource == 'zExisting GIS', 9,
+    $feature.DataSource == 'Field Worker', 10,
+    $feature.DataSource == 'zField Worker', 10,
+    $feature.DataSource == 'Surveyed Point', 11,
+    $feature.DataSource == 'Surveyed Point CM Qual', 11,
+    $feature.DataSource == 'zUtility Locator', 12,
+    $feature.DataSource == 'Utility Locator', 12,
+    $feature.DataSource == 'Street View Imagery', 13,
+    $feature.DataSource == 'Assumed Logic', 14,
+    $feature.DataSource == 'Unknown', 100,
+    Null)
 
 # Catchment Boundary
 # Asset Type
