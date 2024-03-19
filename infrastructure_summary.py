@@ -48,6 +48,7 @@ og_sewer_lateral = "O:/Connection (Admin)/Connection docs/OUTRIGGER_COGP_GIS_SDE
 og_storm_gravity = "O:/Connection (Admin)/Connection docs/OUTRIGGER_COGP_GIS_SDEPublic.sde/SDEPublic.GPGIS.swGravityMain"
 og_storm_drain = "O:/Connection (Admin)/Connection docs/OUTRIGGER_COGP_GIS_SDEPublic.sde/SDEPublic.GPGIS.swOpenDrain"
 og_storm_culvert = "O:/Connection (Admin)/Connection docs/OUTRIGGER_COGP_GIS_SDEPublic.sde/SDEPublic.GPGIS.swCulvert"
+# og_streets = "https://gis.ecso911.com/server/rest/services/Hosted/Centerline_View/FeatureServer"
 og_streets = "O:/Connection (Admin)/Connection docs/OUTRIGGER_COGP_GIS_SDEPublic.sde/SDEPublic.GPGIS.tran_StreetPavementCL"
 og_sidewalks = "O:/Connection (Admin)/Connection docs/OUTRIGGER_COGP_GIS_SDEPublic.sde/SDEPublic.GPGIS.tran_SIDEWALK"
 arcpy.CopyFeatures_management(og_water_mains, "water_mains")

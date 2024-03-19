@@ -69,12 +69,14 @@ class Draft:
         sddraft = os.path.join(draft_dir, sddraft_name)
         sd = os.path.join(draft_dir, sd_name)
 
+        logging.info("Loading project %s.", self.name)
         project = arcpy.mp.ArcGISProject(self.project)
         project_maps = project.listMaps()
         i = 0
         while project_maps[i].name != self.name:
             i += 1
         project_map = project_maps[i]
+        logging.info("Preparing sharing draft for %s.", self.name)
         sharing_draft = project_map.getWebLayerSharingDraft(
             "HOSTING_SERVER", "FEATURE", self.name
         )
@@ -87,6 +89,7 @@ class Draft:
         sharing_draft.exportToSDDraft(sddraft)
         logging.info("Staging service draft for %s.", self.name)
         arcpy.StageService_server(sddraft, sd)
+        logging.info("Draft staged for %s.", self.name)
 
 
 class Drafts:
@@ -94,14 +97,23 @@ class Drafts:
         self.records = records
 
     def draft_service(self, path=base_path, sel="all"):
+        dropped = 0
         if sel == "all":
             for draft in self.records.values():
-                draft.draft_service(path)
+                try:
+                    draft.draft_service(path)
+                except:
+                    logging.info("Dropping %s.", draft.name)
+                    dropped += 1
         else:
             for item in sel:
                 draft = self.records[item]
-                draft.draft_service(path)
-        logging.info("Service drafts complete.")
+                try:
+                    draft.draft_service(path)
+                except:
+                    logging.info("Dropping %s.", draft.name)
+                    dropped += 1
+        logging.info("Service drafts complete, {} dropped.", dropped)
 
 
 credits = "City of Grants Pass"
@@ -221,14 +233,14 @@ schools = Draft(name, summary, tags, description, credits, limitations, project)
 
 name = "sewer_utilities"
 summary = "Sewer utilities service for the City of Grants Pass, Oregon."
-tags = "planning"
+tags = "utilities"
 description = "Service for sewer utilities layers in the City of Grants Pass, Oregon."
 project = sewer_utilities_path
 sewer_utilities = Draft(name, summary, tags, description, credits, limitations, project)
 
 name = "stormwater"
 summary = "Stormwater utilities service for the City of Grants Pass, Oregon."
-tags = "planning"
+tags = "utilities"
 description = (
     "Service for stormwater utilities layers in the City of Grants Pass, Oregon."
 )
@@ -244,7 +256,7 @@ tax_parcels = Draft(name, summary, tags, description, credits, limitations, proj
 
 name = "traffic"
 summary = "Traffic studies service for the City of Grants Pass, Oregon."
-tags = "planning"
+tags = "transportation, public works"
 description = "Service for traffic studies in the City of Grants Pass, Oregon."
 project = traffic_path
 traffic = Draft(name, summary, tags, description, credits, limitations, project)
@@ -276,7 +288,8 @@ records.update({"as_builts": as_builts})
 records.update({"boundaries": boundaries})
 records.update({"cell_towers": cell_towers})
 records.update({"environmental_features": environmental_features})
-records.update({"hazards": historic_cultural_areas})
+records.update({"hazards": hazards})
+records.update({"historic_cultural_areas": historic_cultural_areas})
 records.update({"impervious_surface": impervious_surface})
 records.update({"land_use": land_use})
 records.update({"merlin_landfill": merlin_landfill})
@@ -293,26 +306,26 @@ records.update({"water_utilities": water_utilities})
 records.update({"zoning": zoning})
 
 drafts = Drafts(records)
-# records = [
-#     agreements,
-#     as_builts,
-#     boundaries,
-#     cell_towers,
-#     environmental_features,
-#     hazards,
-#     historic_cultural_areas,
-#     impervious_surface,
-#     land_use,
-#     merlin_landfill,
-#     parking,
-#     parks,
-#     planning,
-#     schools,
-#     sewer_utilities,
-#     stormwater,
-#     tax_parcels,
-#     traffic,
-#     transportation,
-#     water_utilities,
-#     zoning,
-# ]
+short = [
+    "agreements",
+    "as_builts",
+    "boundaries",
+    "cell_towers",
+    "environmental_features",
+    "hazards",
+    "historic_cultural_areas",
+    "impervious_surface",
+    "land_use",
+    "merlin_landfill",
+    "parking",
+    "parks",
+    "planning",
+    "schools",
+    "sewer_utilities",
+    "stormwater",
+    "tax_parcels",
+    "traffic",
+    "transportation",
+    "water_utilities",
+    "zoning",
+]

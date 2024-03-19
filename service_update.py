@@ -35,6 +35,7 @@ short = [
     "agreements",
     "historic_cultural_areas",
     "land_use",
+    "impervious_surface",
     "merlin_landfill",
     "parking",
     "parks",
@@ -70,14 +71,23 @@ class Services:
         self.records = records
 
     def publish(self, gis, path, sel=short):
+        failed = 0
         if sel == "all":
             for service in self.records.values():
-                service.publish(gis, path)
+                try:
+                    service.publish(gis, path)
+                except:
+                    logging.info("Failed to publish %s.", service.name)
+                    failed += 1
         else:
             for item in sel:
                 service = self.records[item]
-                service.publish(gis, path)
-        logging.info("Services published.")
+                try:
+                    service.publish(gis, path)
+                except:
+                    logging.info("Failed to publish service %s.", service.name)
+                    failed += 1
+        logging.info("Services published, %s failed.", failed)
 
 
 agreements = Service("agreements", agreements_id)
@@ -97,30 +107,6 @@ tax_parcels = Service("tax_parcels", tax_parcels_id)
 transportation = Service("transportation", transportation_id)
 water_utilities = Service("water_utilities", water_utilities_id)
 zoning = Service("zoning", zoning_id)
-
-# services = [
-#     agreements,
-#     # as_builts, #
-#     # cell_towers, # fails
-#     # environmental_features, #
-#     # hazards, #
-#     historic_cultural_areas,
-#     # impervious_surface, # fails
-#     land_use,
-#     merlin_landfill,
-#     parking,
-#     parks,
-#     planning,
-#     regulatory_boundaries,
-#     # schools, # fails
-#     sewer_utilities,
-#     stormwater,
-#     # tax_parcels, # fails
-#     # traffic, #
-#     transportation,
-#     water_utilities,
-#     # zoning, # fails
-# ]
 
 records = {}
 records["agreements"] = agreements
@@ -142,3 +128,5 @@ records["water_utilities"] = water_utilities
 records["zoning"] = zoning
 
 services = Services(records)
+logging.info("Run")
+logging.info("services.publish(gis, base_path, short)")

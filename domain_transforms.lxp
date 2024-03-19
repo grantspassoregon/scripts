@@ -25,9 +25,9 @@ When($feature.AssetManager == 'City of Grants Pass', 1,
     $feature.AssetManager == 'State of Oregon', 3,
     $feature.AssetManager == 'Josephine County', 4,
     $feature.AssetManager == 'Federal Govt', 5,
-    $feature.AssetManager == 'Grants Pass Parks', 6,
-    $feature.AssetManager == 'Private', 7,
-    $feature.AssetManager == 'Unknown', 8,
+    $feature.AssetManager == 'Grants Pass Parks', 8,
+    $feature.AssetManager == 'Private', 6,
+    $feature.AssetManager == 'Unknown', 7,
     $feature.AssetManager == 'Other', 100,
     $feature.ownedby)
 
@@ -79,8 +79,28 @@ When(
     $feature.DataSource == 'Utility Locator', 12,
     $feature.DataSource == 'Street View Imagery', 13,
     $feature.DataSource == 'Assumed Logic', 14,
-    $feature.DataSource == 'Unknown', 100,
+    $feature.DataSource == 'Unknown', 0,
     Null)
+
+# Spatial Confidence
+# run after setting data source
+When($feature.spatialsource == 0, 0,
+    $feature.spatialsource == 1, 2,
+    $feature.spatialsource == 2, 2,
+    $feature.spatialsource == 3, 3,
+    $feature.spatialsource == 4, 2,
+    $feature.spatialsource == 5, 3,
+    $feature.spatialsource == 6, 3,
+    $feature.spatialsource == 7, 2,
+    $feature.spatialsource == 8, 2,
+    $feature.spatialsource == 9, 3,
+    $feature.spatialsource == 10, 2,
+    $feature.spatialsource == 11, 1,
+    $feature.spatialsource == 12, 2,
+    $feature.spatialsource == 13, 3,
+    $feature.spatialsource == 14, 3,
+    0)
+
 
 # Catchment Boundary
 # Asset Type
@@ -110,3 +130,54 @@ When($feature.LOCDESC == 'POND', 2,
     $feature.LOCDESC == 'STORMTECH UG DETENTION AREA', 2,
     $feature.LOCDESC == 'STORMWATER DETENTION POND', 2,
     $feature.LOCDESC)
+
+# Stormwater Cleanout Material
+# select by attribute where stormwater device asset group is cleanout
+# cleanout material maps to the piPipeMaterial domain
+# Stormwater Catchbasin Material
+# select by attribute where stormwater device asset group is catchbasin
+# catchbasin material maps to the piPipeMaterial domain
+# Stormwater Inlet Material
+# select by attribute where stormwater device asset group is BMP Inlet
+# set subtype domain to stormwater outlet material (or a like domain, default is none)
+When($feature.accessmat == "ABS", 1, 
+    $feature.accessmat == "AC", 2,
+    $feature.accessmat == "ASP", 3,
+    $feature.accessmat == "BR", 4,
+    $feature.accessmat == "BMP", 4,
+    $feature.accessmat == "CAS", 5,
+    $feature.accessmat == "CT", 6,
+    $feature.accessmat == "CP", 7,
+    $feature.accessmat == "CSB", 8,
+    $feature.accessmat == "CSU", 9,
+    $feature.accessmat == "CIP", 10,
+    $feature.accessmat == "CIPP", 10,
+    $feature.accessmat == "CMP", 16,
+    $feature.accessmat == "COP", 16,
+    $feature.accessmat == "DIP", 11,
+    $feature.accessmat == "EARGEO", 16,
+    $feature.accessmat == "FRP", 12,
+    $feature.accessmat == "GEO", 16,
+    $feature.accessmat == "GP", 13,
+    $feature.accessmat == "GRC", 14,
+    $feature.accessmat == "HDPE", 15,
+    $feature.accessmat == "OB", 16,
+    $feature.accessmat == "PSC", 17,
+    $feature.accessmat == "PE", 18,
+    $feature.accessmat == "PP", 19,
+    $feature.accessmat == "PVC", 20,
+    $feature.accessmat == "PCCP", 21,
+    $feature.accessmat == "RCP", 22,
+    $feature.accessmat == "RPM", 23,
+    $feature.accessmat == "RMP", 23,
+    $feature.accessmat == "SB", 24,
+    $feature.accessmat == "SP", 25,
+    $feature.accessmat == "TTE", 16,
+    $feature.accessmat == "VCP", 26,
+    $feature.accessmat == "WD", 16,
+    $feature.accessmat == "UNK", 16,
+    $feature.accessmat == "RBC", 16,
+    $feature.accessmat == "ROCK", 16,
+    $feature.accessmat == "OTH", 16,
+    16)
+
