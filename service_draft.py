@@ -102,7 +102,8 @@ class Drafts:
             for draft in self.records.values():
                 try:
                     draft.draft_service(path)
-                except:
+                except Exception as e:
+                    logging.info("Exception %s.", e)
                     logging.info("Dropping %s.", draft.name)
                     dropped += 1
         else:
@@ -110,7 +111,8 @@ class Drafts:
                 draft = self.records[item]
                 try:
                     draft.draft_service(path)
-                except:
+                except Exception as e:
+                    logging.info("Exception %s.", e)
                     logging.info("Dropping %s.", draft.name)
                     dropped += 1
         logging.info("Service drafts complete, {} dropped.", dropped)
@@ -329,3 +331,6 @@ short = [
     "water_utilities",
     "zoning",
 ]
+
+logging.info("Run")
+logging.info("drafts.draft_service(short)")

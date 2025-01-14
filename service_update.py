@@ -45,6 +45,7 @@ short = [
     "stormwater",
     "transportation",
     "water_utilities",
+    "zoning",
 ]
 
 
@@ -76,7 +77,8 @@ class Services:
             for service in self.records.values():
                 try:
                     service.publish(gis, path)
-                except:
+                except Exception as e:
+                    logging.info("Exception %s.", e)
                     logging.info("Failed to publish %s.", service.name)
                     failed += 1
         else:
@@ -84,7 +86,8 @@ class Services:
                 service = self.records[item]
                 try:
                     service.publish(gis, path)
-                except:
+                except Exception as e:
+                    logging.info("Exception %s.", e)
                     logging.info("Failed to publish service %s.", service.name)
                     failed += 1
         logging.info("Services published, %s failed.", failed)

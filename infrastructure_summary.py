@@ -96,7 +96,7 @@ def list_field(fc, field_val, field_type=None, select_type=None):
             SI.set_quantity_scale_factor(dist, val * u.foot)
             val = dist
             print(val)
-        if field_type == None:
+        if field_type is None:
             vals.append(val)
         else:
             val_type = row.getValue(field_type)
@@ -116,7 +116,7 @@ def list_pipe_length(pipe, value, status, owner, ugb, in_ugb=True):
         logging.debug(pipe_owner == "City of Grants Pass")
         pipe_ugb = row.getValue(ugb)
         ugb_test = 1
-        if in_ugb == False:
+        if in_ugb is False:
             ugb_test = 0
         if (
             pipe_status == "Active"
@@ -136,7 +136,7 @@ def list_street_length(street, value, owner, ugb, in_ugb=True):
         logging.debug(pipe_owner == "City of Grants Pass")
         pipe_ugb = row.getValue(ugb)
         ugb_test = 1
-        if in_ugb == False:
+        if in_ugb is False:
             ugb_test = 0
         if pipe_owner == "City of Grants Pass" and pipe_ugb == ugb_test:
             vals.append(val)
@@ -397,11 +397,9 @@ def infrastructure_report():
     out_km = []
     out_ml = []
 
-    main_ct = list_pipe_length(
-        "water_mains_ugb", "id", "status", "owner", "Join_Count", 1
-    )
+    main_ct = list_pipe_length("water_mains_ugb", "id", "status", "owner", "Join_Count")
     main_ct_out = list_pipe_length(
-        "water_mains_ugb", "id", "status", "owner", "Join_Count", 0
+        "water_mains_ugb", "id", "status", "owner", "Join_Count", False
     )
     ugb_ct.append(report_count(main_ct))
     out_ct.append(report_count(main_ct_out))
@@ -419,10 +417,10 @@ def infrastructure_report():
     out_ml.append(report_length(main_lengths_nonugb, "miles"))
 
     lateral_ct = list_pipe_length(
-        "water_laterals_ugb", "id", "status", "owner", "Join_Count", 1
+        "water_laterals_ugb", "id", "status", "owner", "Join_Count"
     )
     lateral_ct_out = list_pipe_length(
-        "water_laterals_ugb", "id", "status", "owner", "Join_Count", 0
+        "water_laterals_ugb", "id", "status", "owner", "Join_Count", False
     )
     ugb_ct.append(report_count(lateral_ct))
     out_ct.append(report_count(lateral_ct_out))
@@ -454,10 +452,10 @@ def infrastructure_report():
 
     # sewer
     pressurized_ct = list_pipe_length(
-        "sewer_pressurized_ugb", "id", "status", "owner", "Join_Count", 1
+        "sewer_pressurized_ugb", "id", "status", "owner", "Join_Count"
     )
     pressurized_ct_out = list_pipe_length(
-        "sewer_pressurized_ugb", "id", "status", "owner", "Join_Count", 0
+        "sewer_pressurized_ugb", "id", "status", "owner", "Join_Count", False
     )
     ugb_ct.append(report_count(pressurized_ct))
     out_ct.append(report_count(pressurized_ct_out))
@@ -480,10 +478,10 @@ def infrastructure_report():
     out_ml.append(report_length(pressurized_lengths_nonugb, "miles"))
 
     gravity_ct = list_pipe_length(
-        "sewer_gravity_ugb", "id", "status", "owner", "Join_Count", 1
+        "sewer_gravity_ugb", "id", "status", "owner", "Join_Count"
     )
     gravity_ct_out = list_pipe_length(
-        "sewer_gravity_ugb", "id", "status", "owner", "Join_Count", 0
+        "sewer_gravity_ugb", "id", "status", "owner", "Join_Count", False
     )
     ugb_ct.append(report_count(gravity_ct))
     out_ct.append(report_count(gravity_ct_out))
@@ -506,10 +504,10 @@ def infrastructure_report():
     out_ml.append(report_length(gravity_lengths_nonugb, "miles"))
 
     laterals_ct = list_pipe_length(
-        "sewer_lateral_ugb", "id", "status", "owner", "Join_Count", 1
+        "sewer_lateral_ugb", "id", "status", "owner", "Join_Count"
     )
     laterals_ct_out = list_pipe_length(
-        "sewer_lateral_ugb", "id", "status", "owner", "Join_Count", 0
+        "sewer_lateral_ugb", "id", "status", "owner", "Join_Count", False
     )
     ugb_ct.append(report_count(laterals_ct))
     out_ct.append(report_count(laterals_ct_out))
@@ -526,7 +524,7 @@ def infrastructure_report():
         "status",
         "owner",
         "Join_Count",
-        in_ugb=False,
+        False,
     )
     out_km.append(report_length(laterals_lengths_nonugb))
     out_ml.append(report_length(laterals_lengths_nonugb, "miles"))
@@ -540,10 +538,10 @@ def infrastructure_report():
     out_ml.append(out_ml[3] + out_ml[4] + out_ml[5])
 
     gravity_ct = list_pipe_length(
-        "storm_gravity_ugb", "id", "status", "owner", "Join_Count", 1
+        "storm_gravity_ugb", "id", "status", "owner", "Join_Count"
     )
     gravity_ct_out = list_pipe_length(
-        "storm_gravity_ugb", "id", "status", "owner", "Join_Count", 0
+        "storm_gravity_ugb", "id", "status", "owner", "Join_Count", False
     )
     ugb_ct.append(report_count(gravity_ct))
     out_ct.append(report_count(gravity_ct_out))
@@ -566,10 +564,10 @@ def infrastructure_report():
     out_ml.append(report_length(gravity_lengths_nonugb, "miles"))
 
     drain_ct = list_pipe_length(
-        "storm_drain_ugb", "id", "status", "owner", "Join_Count", 1
+        "storm_drain_ugb", "id", "status", "owner", "Join_Count"
     )
     drain_ct_out = list_pipe_length(
-        "storm_drain_ugb", "id", "status", "owner", "Join_Count", 0
+        "storm_drain_ugb", "id", "status", "owner", "Join_Count", False
     )
     ugb_ct.append(report_count(drain_ct))
     out_ct.append(report_count(drain_ct_out))
