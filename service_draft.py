@@ -46,6 +46,10 @@ zoning_path = "O:/gisuserprojects/users/erikrose/zoning.aprx"
 
 
 class Draft:
+    """
+    The `Draft` class holds the required data to publish a service draft.
+    """
+
     def __init__(self, name, summary, tags, description, credits, limitations, project):
         self.name = name
         self.summary = summary
@@ -70,6 +74,7 @@ class Draft:
         sd = os.path.join(draft_dir, sd_name)
 
         logging.info("Loading project %s.", self.name)
+        arcpy.AddMessage("Loading project {}.".format(self.name))
         project = arcpy.mp.ArcGISProject(self.project)
         project_maps = project.listMaps()
         i = 0
@@ -77,6 +82,7 @@ class Draft:
             i += 1
         project_map = project_maps[i]
         logging.info("Preparing sharing draft for %s.", self.name)
+        arcpy.AddMessage("Preparing sharing draft for {}.".format(self.name))
         sharing_draft = project_map.getWebLayerSharingDraft(
             "HOSTING_SERVER", "FEATURE", self.name
         )
@@ -86,26 +92,37 @@ class Draft:
         sharing_draft.credits = self.credits
         sharing_draft.useLimitations = self.limitations
         logging.info("Exporting service draft for %s.", self.name)
+        arcpy.AddMessage("Exporting service draft for {}.".format(self.name))
         sharing_draft.exportToSDDraft(sddraft)
         logging.info("Staging service draft for %s.", self.name)
+        arcpy.AddMessage("Staging service draft for {}.".format(self.name))
         arcpy.StageService_server(sddraft, sd)
         logging.info("Draft staged for %s.", self.name)
+        arcpy.AddMessage("Draft staged for {}.".format(self.name))
 
 
 class Drafts:
+    """
+    The `Drafts` class is a thin wrapper around a vector of type `Draft`.
+    """
+
     def __init__(self, records):
         self.records = records
 
     def draft_service(self, path=base_path, sel="all"):
         dropped = 0
+        drop_names = []
         if sel == "all":
             for draft in self.records.values():
                 try:
                     draft.draft_service(path)
                 except Exception as e:
                     logging.info("Exception %s.", e)
+                    arcpy.AddMessage("Exception {}.".format(e))
                     logging.info("Dropping %s.", draft.name)
+                    arcpy.AddMessage("Dropping {}.".format(draft.name))
                     dropped += 1
+                    drop_names.append(draft.name)
         else:
             for item in sel:
                 draft = self.records[item]
@@ -113,9 +130,14 @@ class Drafts:
                     draft.draft_service(path)
                 except Exception as e:
                     logging.info("Exception %s.", e)
+                    arcpy.AddMessage("Exception {}.".format(e))
                     logging.info("Dropping %s.", draft.name)
+                    arcpy.AddMessage("Dropping {}.".format(draft.name))
                     dropped += 1
+                    drop_names.append(draft.name)
         logging.info("Service drafts complete, {} dropped.", dropped)
+        arcpy.AddMessage("Service drafts complete, {} dropped.".format(dropped))
+        arcpy.AddMessage("Dropped layers: {}".format(drop_names))
 
 
 credits = "City of Grants Pass"
@@ -332,5 +354,9 @@ short = [
     "zoning",
 ]
 
-logging.info("Run")
-logging.info("drafts.draft_service(short)")
+# logging.info("Run")
+# arcpy.AddMessage("Run the command:")
+# logging.info("drafts.draft_service(sel=short)")
+# arcpy.AddMessage("drafts.draft_service(sel=short)")
+# added for ArcPro tool
+drafts.draft_service()

@@ -1,12 +1,8 @@
-import os, sys
-import logging
+import os
+from arcgis.gis import GIS
+import arcpy
 
-logging.basicConfig(
-    format="%(asctime)s %(message)s",
-    datefmt="%m/%d/%Y %I:%M:%S %p",
-    filename="p:/service_update.log",
-    level=logging.INFO,
-)
+gis = GIS()
 
 # path to base directory for draft projects
 base_path = "O:/gisuserprojects/users/erikrose/service_drafts"
@@ -57,19 +53,15 @@ class Service:
         sd_name = "temp_" + self.name + ".sd"
         draft_dir = os.path.join(path, self.name)
         sd = os.path.join(draft_dir, sd_name)
-        logging.info("Searching for %s service on %s.", self.name, gis.properties.name)
-        # arcpy.AddMessage(
-        #     "Searching for {} service on {}".format(self.name, gis.properties.name)
-        # )
+        arcpy.AddMessage(
+            "Searching for {} service on {}".format(self.name, gis.properties.name)
+        )
         item = gis.content.get(self.id)
-        logging.info("Updating service for %s.", self.name)
-        # arcpy.AddMessage("Updating service for {}", self.name)
+        arcpy.AddMessage("Updating service for {}".format(self.name))
         item.update(data=sd)
-        logging.info("Overwriting service for %s.", self.name)
-        # arcpy.AddMessage("Overwriting service for {}", self.name)
+        arcpy.AddMessage("Overwriting service for {}".format(self.name))
         fs = item.publish(overwrite=True, file_type="serviceDefinition")
-        logging.info("Service updated for %s.", fs.title)
-        # arcpy.AddMessage("Service updated for {}", fs.title)
+        arcpy.AddMessage("Service updated for {}".format(fs.title))
 
 
 class Services:
@@ -84,10 +76,8 @@ class Services:
                 try:
                     service.publish(gis, path)
                 except Exception as e:
-                    logging.info("Exception %s.", e)
-                    # arcpy.AddMessage("Exception {}", e)
-                    logging.info("Failed to publish %s.", service.name)
-                    # arcpy.AddMessage("Failed to publish {}", service.name)
+                    arcpy.AddMessage("Exception {}".format(e))
+                    arcpy.AddMessage("Failed to publish {}".format(service.name))
                     failed += 1
                     fail_names.append(service.name)
         else:
@@ -96,16 +86,12 @@ class Services:
                 try:
                     service.publish(gis, path)
                 except Exception as e:
-                    logging.info("Exception %s.", e)
-                    # arcpy.AddMessage("Exception {}", e)
-                    logging.info("Failed to publish service %s.", service.name)
-                    # arcpy.AddMessage("Failed to publish {}", service.name)
+                    arcpy.AddMessage("Exception {}".format(e))
+                    arcpy.AddMessage("Failed to publish {}".format(service.name))
                     failed += 1
                     fail_names.append(service.name)
-        logging.info("Services published, %s failed.", failed)
-        # arcpy.AddMessage("Services published, {} failed", failed)
-        logging.info("Failed services: %s.", fail_names)
-        # arcpy.AddMessage("Failed services: {}.", fail_names)
+        arcpy.AddMessage("Services published, {} failed".format(failed))
+        arcpy.AddMessage("Failed services: {}.".format(fail_names))
 
 
 agreements = Service("agreements", agreements_id)
@@ -146,7 +132,4 @@ records["water_utilities"] = water_utilities
 records["zoning"] = zoning
 
 services = Services(records)
-# logging.info("Run")
-# logging.info("services.publish(gis, base_path, short)")
-# added for ArcPro toolbox
 services.publish(gis, base_path, short)
