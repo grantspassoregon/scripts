@@ -1,8 +1,18 @@
 import os
+import sys
 from arcgis.gis import GIS
 import arcpy
 
-gis = GIS()
+# client_id = None
+
+# if len(sys.argv) > 1:
+#     client_id = sys.argv[1]
+# else:
+#     msg = "Client ID missing.  Usage: 'service_update_arc.py YOUR_CLIENT_ID'"
+#     arcpy.AddMessage(msg)
+#     exit()
+
+PORTAL = "https://grantspassoregon.maps.arcgis.com/"
 
 # path to base directory for draft projects
 base_path = "O:/gisuserprojects/users/erikrose/service_drafts"
@@ -132,4 +142,8 @@ records["water_utilities"] = water_utilities
 records["zoning"] = zoning
 
 services = Services(records)
-services.publish(gis, base_path, short)
+
+if __name__ == "__main__":
+    client_id = arcpy.GetParameterAsText(0)
+    gis = GIS(PORTAL, client_id=client_id)
+    services.publish(gis, base_path, short)
