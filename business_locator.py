@@ -13,26 +13,24 @@ import subprocess
 
 
 if __name__ == "__main__":
-    source = arcpy.GetParameterAsText(0)
-    target = arcpy.GetParameterAsText(1)
+    business = arcpy.GetParameterAsText(0)
+    addresses = arcpy.GetParameterAsText(1)
     out_table = arcpy.GetParameterAsText(2)
     cwd = arcpy.GetParameterAsText(3)
     exe = arcpy.GetParameterAsText(4)
 
     out = out_table + ".csv"
-    out = os.path.join(cwd, out_table)
-    # compare addresses
+    out = os.path.join(cwd, out)
+    # map business licenses to addresses
     subprocess.run(
         [
             exe,
             "-c",
-            "compare",
+            "business",
             "-s",
-            source,
-            "-k",
-            "common",
+            business,
             "-t",
-            target,
+            addresses,
             "-z",
             "common",
             "-o",
@@ -40,7 +38,7 @@ if __name__ == "__main__":
         ]
     )
 
-    # filter missing addresses
+    # filter missing licenses
     missing = out_table + "_missing.csv"
     missing = os.path.join(cwd, missing)
     subprocess.run(
@@ -53,13 +51,13 @@ if __name__ == "__main__":
             "-s",
             out,
             "-k",
-            "full",
+            "business",
             "-o",
             missing,
         ]
     )
 
-    # filter divergent addresses
+    # filter divergent licenses
     divergent = out_table + "_divergent.csv"
     divergent = os.path.join(cwd, divergent)
     subprocess.run(
@@ -72,7 +70,7 @@ if __name__ == "__main__":
             "-s",
             out,
             "-k",
-            "full",
+            "business",
             "-o",
             divergent,
         ]
