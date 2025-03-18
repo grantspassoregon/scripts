@@ -1,0 +1,19 @@
+// stormwater line
+When($feature.ASSETGROUP == 4 && $feature.ASSETTYPE == 3, "Gravity Main",
+$feature.ASSETGROUP == 5 && $feature.ASSETTYPE == 45, "Natural Channel",
+$feature.ASSETGROUP == 5 && $feature.ASSETTYPE == 47, "Roadside Gutter",
+$feature.ASSETGROUP == 6 && $feature.ASSETTYPE == 81, "Pipe Culvert",
+"Other")
+
+// stormwater device
+When($feature.ASSETGROUP == 21 && $feature.ASSETTYPE == 1, "Cleanout",
+$feature.ASSETGROUP == 22 && $feature.ASSETTYPE == 5, "Pipe Outlet",
+$feature.ASSETGROUP == 23 && $feature.ASSETTYPE == 241, "Pipe Connection",
+$feature.ASSETGROUP == 23 && $feature.ASSETTYPE == 243, "Open Channel Connection",
+$feature.ASSETGROUP == 24 && $feature.ASSETTYPE == 500, "Irrigation Valve",
+$feature.ASSETGROUP == 28 && $feature.ASSETTYPE == 210, "Drop Inlet",
+$feature.ASSETGROUP == 30 && $feature.ASSETTYPE == 7, "Pipe Inlet",
+$feature.ASSETGROUP == 30 && $feature.ASSETTYPE == 8, "Channel Inlet",
+$feature.ASSETGROUP == 32 && $feature.ASSETTYPE == 301, "Manhole",
+"Other")
+
