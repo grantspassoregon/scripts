@@ -154,10 +154,15 @@ class Drafts:
                     arcpy.AddMessage("Dropping {}.".format(draft.name))
                     dropped += 1
                     drop_names.append(draft.name)
+
         logging.info("Service drafts complete, {} dropped.", dropped)
         arcpy.AddMessage("Service drafts complete, {} dropped.".format(dropped))
-        logging.info("Dropped layers: {}".format(drop_names))
-        arcpy.AddMessage("Dropped layers: {}".format(drop_names))
+        if drop_names:
+            logging.info("Dropped layers: {}".format(drop_names))
+            arcpy.AddMessage("Dropped layers: {}".format(drop_names))
+        else:
+            logging.info("All services published.")
+            arcpy.AddMessage("All services published.")
 
 
 ### Metadata for each layer
