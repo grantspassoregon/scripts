@@ -160,6 +160,8 @@ class Drafts:
         arcpy.AddMessage("Dropped layers: {}".format(drop_names))
 
 
+### Metadata for each layer
+
 credits = "City of Grants Pass"
 limitations = """
 DISCLAIMER
