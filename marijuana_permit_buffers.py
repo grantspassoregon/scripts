@@ -1,12 +1,6 @@
 import arcpy
 from arcpy import metadata as md
-from sympy import symbols
-import sympy.physics.units as u
-from sympy.physics.units.systems import SI
-from sympy.physics.units import length, meter, foot, mile, kilometer, convert_to
-from sympy.physics.units.systems.si import dimsys_SI
 import os
-import pandas
 import logging
 
 
@@ -14,6 +8,12 @@ arcpy.env.parallelProcessingFactor = "100%"
 arcpy.env.overwriteOutput = True
 
 # Customize these variables to paths on your system
+path = "O:/GISUserProjects/Departments/GIS_General/Services/marijuana_permit_buffers"
+aprx = os.path.join(path, "marijuana_permit_buffers.aprx")
+gdb = os.path.join(path, "marijuana_permit_buffers.gdb")
+# enterprise database
+egdb = "O:/Connection (Admin)/Connection docs/OUTRIGGER_COGP_GIS_SDEPublic.sde"
+adult_use_gdb = os.path.join(egdb, "SDEPublic.GPGIS.AdultUse")
 PROJECT_DIR = "C:/Users/erose/projects/marijuana_permit_buffers"
 GDB_NAME = "marijuana_permit_buffers.gdb"
 # WORKSPACE = os.path.join(PROJECT_DIR, GDB_NAME)
@@ -35,12 +35,12 @@ logging.basicConfig(
 logging.info("environmental variables loaded")
 
 # create gbd to host project layers
-arcpy.management.CreateFileGDB(PROJECT_DIR, GDB_NAME)
+arcpy.management.CreateFileGDB(path, GDB_NAME)
 # set new gdb as workspace
-arcpy.env.workspace = WORKSPACE
+arcpy.env.workspace = gdb
 
 # open arcpro project
-aprx = arcpy.mp.ArcGISProject(ARCGIS_PROJECT)
+aprx = arcpy.mp.ArcGISProject(aprx)
 
 
 # helper functions
@@ -58,27 +58,29 @@ def field_map(fms, lyr, from_name, to_name, rule="First"):
 # copy layers from city database to local gdb
 # defensive copies for editing and publishing
 logging.info("Importing layers from SDE database.")
-# og_marijuana_businesses = "O:/Connection (Admin)/Connection docs/OUTRIGGER_COGP_GIS_SDEPublic.sde/SDEPublic.GPGIS.MarijuanaBusinesses/SDEPublic.GPGIS.MarijuanaBusinesses"
-og_marijuana_businesses = "O:/GISUserProjects/Users/ErikRose/marijuana_adult_use/marijuana_adult_use.gdb/marijuana_businesses"
+og_marijuana_businesses = os.path.join(
+    egdb, "SDEPublic.GPGIS.MarijuanaBusinesses/SDEPublic.GPGIS.MarijuanaBusinesses"
+)
 # og_daycare_facilities = "O:/Connection (Admin)/Connection docs/OUTRIGGER_COGP_GIS_SDEPublic.sde/SDEPublic.GPGIS.MarijuanaBusinesses/SDEPublic.GPGIS.DaycareFacilities"
 # og_licensed_daycares = "O:/GISUserProjects/Users/ErikRose/marijuana_adult_use/marijuana_adult_use.gdb/licensed_daycares_confirmed"
 # og_industrial_zone_schools = "O:/Connection (Admin)/Connection docs/OUTRIGGER_COGP_GIS_SDEPublic.sde/SDEPublic.GPGIS.MarijuanaBusinesses/SDEPublic.GPGIS.IndustrialZoneSchools"
 # og_recreational_facilities = "O:/Connection (Admin)/Connection docs/OUTRIGGER_COGP_GIS_SDEPublic.sde/SDEPublic.GPGIS.AdultUse/SDEPublic.GPGIS.CommRecFacilities"
-og_recreational_facilities = "O:/GISUserProjects/Users/ErikRose/marijuana_adult_use/marijuana_adult_use.gdb/recreational_facilities"
-og_library = "O:/Connection (Admin)/Connection docs/OUTRIGGER_COGP_GIS_SDEPublic.sde/SDEPublic.GPGIS.AdultUse/SDEPublic.GPGIS.Library"
-og_parks = "O:/Connection (Admin)/Connection docs/OUTRIGGER_COGP_GIS_SDEPublic.sde/SDEPublic.GPGIS.AdultUse/SDEPublic.GPGIS.Parks"
-og_developed_parks = "O:/GISUserProjects/Users/ErikRose/marijuana_adult_use/marijuana_adult_use.gdb/developed_parks"
-og_residential_zones = "O:/Connection (Admin)/Connection docs/OUTRIGGER_COGP_GIS_SDEPublic.sde/SDEPublic.GPGIS.AdultUse/SDEPublic.GPGIS.ResidentialZones"
-# og_schools = "O:/Connection (Admin)/Connection docs/OUTRIGGER_COGP_GIS_SDEPublic.sde/SDEPublic.GPGIS.AdultUse/SDEPublic.GPGIS.Schools"
-og_schools = "O:/GISUserProjects/Users/ErikRose/marijuana_adult_use/marijuana_adult_use.gdb/schools"
-og_ugb = "O:/Connection (Admin)/Connection docs/OUTRIGGER_COGP_GIS_SDEPublic.sde/SDEPublic.GPGIS.reg_UGB2014"
-og_zoning = "O:/Connection (Admin)/Connection docs/OUTRIGGER_COGP_GIS_SDEPublic.sde/SDEPublic.GPGIS.plan_ZONINGDISTRICT"
-og_taxlots = "O:/Connection (Admin)/Connection docs/OUTRIGGER_COGP_GIS_SDEPublic.sde/SDEPublic.GPGIS.JoCo_FS_Export_1"
-og_city_limits = "O:/Connection (Admin)/Connection docs/OUTRIGGER_COGP_GIS_SDEPublic.sde/SDEPublic.GPGIS.reg_CITYLIMITS2023"
+og_recreational_facilities = os.path.join(
+    adult_use_gdb, "SDEPublic.GPGIS.CommRecFacilities"
+)
+og_library = os.path.join(adult_use_gdb, "SDEPublic.GPGIS.Library")
+og_parks = os.path.join(egdb, "SDEPublic.GPGIS.land_PARKSANDGREENSPACE")
+# og_residential_zones = os.path.join(adult_use_gdb, "SDEPublic.GPGIS.ResidentialZones")
+og_schools = os.path.join(adult_use_gdb, "SDEPublic.GPGIS.Schools")
+og_ugb = os.path.join(egdb, "SDEPublic.GPGIS.reg_UGB2014")
+og_zoning = os.path.join(egdb, "SDEPublic.GPGIS.plan_ZONINGDISTRICT")
+# switch to county version of tax parcels
+og_taxlots = os.path.join(egdb, "SDEPublic.GPGIS.JoCo_FS_Export_1")
+og_city_limits = os.path.join(egdb, "SDEPublic.GPGIS.reg_CITYLIMITS")
 
-arcpy.CopyFeatures_management(og_residential_zones, "residential_zones")
+# arcpy.CopyFeatures_management(og_residential_zones, "residential_zones")
 arcpy.CopyFeatures_management(og_recreational_facilities, "recreational_facilities")
-arcpy.CopyFeatures_management(og_developed_parks, "developed_parks")
+arcpy.CopyFeatures_management(og_parks, "parks")
 arcpy.CopyFeatures_management(og_schools, "schools")
 # arcpy.CopyFeatures_management(og_industrial_zone_schools, "industrial_zone_schools")
 # arcpy.CopyFeatures_management(og_daycare_facilities, "daycare_facilities")
@@ -90,14 +92,52 @@ arcpy.CopyFeatures_management(og_zoning, "zoning")
 arcpy.CopyFeatures_management(og_taxlots, "taxlots")
 arcpy.CopyFeatures_management(og_city_limits, "city_limits")
 
+
+# developed parks
+park_names = [
+    "Westholm Park",
+    "Riverside Park",
+    "Reinhard Volunteer Park",
+    "Redwood Park",
+    "Morrison Centennial Park",
+    "Lawnridge Park",
+    "Grants Pass Skate Park",
+    "Gilbert Creek Park",
+    "Fruitdale Park",
+    "Eckstein Park",
+    "Baker Park",
+    "Debo Park",
+    "Robert Loveless Park",
+    "Tussing Park",
+]
+select_parks = "NAME IN " + str(park_names)
+select_parks = select_parks.replace("[", "(")
+select_parks = select_parks.replace("]", ")")
+logging.info("Selecting developed parks.")
+arcpy.management.SelectLayerByAttribute("parks", "NEW_SELECTION", select_parks)
+arcpy.management.CopyFeatures("parks", "developed_parks")
+
+# residential zoning
+select_residential = "ZONECLASS IN ('R-1-10', 'R-1-12', 'R-1-6', 'R-1-8', 'R-2', 'R-3', 'R-3-2', 'R-4', 'R-4-1', 'R-4-2', 'RR-1', 'RR-2.5', 'RR-5')"
+logging.info("Selecting residential zoning.")
+arcpy.management.SelectLayerByAttribute("zoning", "NEW_SELECTION", select_residential)
+arcpy.management.CopyFeatures("zoning", "residential_zones")
+
+
 # read csv of daycares from OCC
-intable = "c:/users/erose/projects/marijuana_permit_buffers/licensed_daycares.csv"
+# intable = "c:/users/erose/projects/marijuana_permit_buffers/licensed_daycares.csv"
+intable = os.path.join(path, "licensed_daycares.csv")
 # arcpy.management.MakeTableView(intable, "licensed_daycares_tbl")
 arcpy.conversion.ExportTable(
     intable,
-    "c:/users/erose/projects/marijuana_permit_buffers/marijuana_permit_buffers.gdb/daycares_tbl",
+    os.path.join(gdb, "daycares_tbl"),
 )
 # match OCC address to parcel situs address
+# if addr == "1252 E VIEW PL":
+#     addr = "1252 EAST VIEW PL"
+
+# change subaddresses to the parcel situs address
+# match spelling of directionals etc exactly the parcel situs
 codeblock = """
 def parse_address(address):
     addr = address.upper()
@@ -105,20 +145,26 @@ def parse_address(address):
         addr = "3345 REDWOOD HWY"
     if addr == "1701 SW NEBRASKA AVE":
         addr = "1701 NEBRASKA AVE"
-    if addr == "1867 WILLIAMS HWY STE 106A":
-        addr = "1867 WILLIAMS HWY"
     if addr == "222 GRANGE RD":
         addr = "220 WILLIAMSON LOOP"
     if addr == "408 SE G ST STE B & C":
         addr = "410 SE G ST"
-    if addr == "1252 E VIEW PL": 
-        addr = "1252 EAST VIEW PL"
-    if addr == "1281 E VIEW PL": 
-        addr = "1281 EAST VIEW PL"
     if addr == "1324 NE BEA VILLA VW":
         addr = "1324 NE BEAVILLA VIEW"
-    if addr == "241 MARION LN":
-        addr = "241 SW MARION LN"
+    if addr == "1867 WILLIAMS HWY STE 106A":
+        addr = "1867 WILLIAMS HWY"
+    if addr == "1720 REDWOOD AVE STE J":
+        addr = "1720 REDWOOD AVE"
+    if addr == "269 W HARBECK RD":
+        addr = "269 WEST HARBECK RD"
+    if addr == "848 NE 7TH ST":
+        addr = "839 NE 6TH ST"
+    if addr == "2482 SAND CREEK ROAD":
+        addr = "2482 SAND CREEK RD"
+    if addr == "1281 E VIEW PL":
+        addr = "1281 EAST VIEW PL"
+    if addr == "1460 NORTHEAST GRABLE DRIVE":
+        addr = "1460 NE GRABLE DR"
     return(addr)
 """
 logging.info("Converting daycare addresses to tax parcel situs addresses.")
@@ -131,8 +177,8 @@ arcpy.management.AddJoin("daycares_tbl", "address", "taxlots", "SITUS")
 
 fc = "daycares_tbl"
 fields = [
-    "daycares_tbl.License_No",
-    "daycares_tbl.Facility_Type",
+    "daycares_tbl.License",
+    "daycares_tbl.License_Type",
     "daycares_tbl.Facility_Name",
     "daycares_tbl.Facility_Address",
     "taxlots.MAPNUM",
@@ -161,9 +207,9 @@ arcpy.management.AddJoin(
 
 logging.info("Building field map for licensed daycares layer.")
 fms = arcpy.FieldMappings()
-field_map(fms, "daycare_taxlots", "daycares_tbl.License_No", "License")
+field_map(fms, "daycare_taxlots", "daycares_tbl.License", "License")
 field_map(fms, "daycare_taxlots", "daycares_tbl.Facility_Name", "Name")
-field_map(fms, "daycare_taxlots", "daycares_tbl.Facility_Type", "Type")
+field_map(fms, "daycare_taxlots", "daycares_tbl.License_Type", "Type")
 field_map(fms, "daycare_taxlots", "daycares_tbl.Facility_Address", "Address")
 
 logging.info("Exporting parcels with daycare attributes as licensed daycares layer.")
@@ -171,21 +217,25 @@ arcpy.conversion.ExportFeatures(
     "daycare_taxlots", "licensed_daycares", field_mapping=fms
 )
 
+exclude_schools = "SCHOOL_NAM NOT IN ('Grants Pass Seventh Day Adventist School', 'Baker Charter School', 'Newbridge High School')"
+logging.info("Selecting schools large enough to meet the municipal code requirements.")
+arcpy.management.SelectLayerByAttribute("schools", "NEW_SELECTION", exclude_schools)
+arcpy.management.CopyFeatures("schools", "schools_subset")
 
 # field map for spatial join of schools to zoning
 logging.info("Building field map for spatial join of schools to zoning.")
 fms = arcpy.FieldMappings()
-field_map(fms, "schools", "SCHOOL_NAM", "Name")
-field_map(fms, "schools", "SCHOOL_DIS", "District")
-field_map(fms, "schools", "ADDRESS", "Address")
-field_map(fms, "schools", "GRADE", "Grade")
+field_map(fms, "schools_subset", "SCHOOL_NAM", "Name")
+field_map(fms, "schools_subset", "SCHOOL_DIS", "District")
+field_map(fms, "schools_subset", "ADDRESS", "Address")
+field_map(fms, "schools_subset", "GRADE", "Grade")
 field_map(fms, "zoning", "ZONECLASS", "ZoneClass")
 field_map(fms, "zoning", "ZONEDESC", "ZoneDescription")
 
 # spatial join of schools to zoning
 logging.info("Joining zoning fields to schools layer.")
 arcpy.analysis.SpatialJoin(
-    "schools",
+    "schools_subset",
     "zoning",
     "schools_zoned",
     "#",
@@ -306,7 +356,9 @@ arcpy.analysis.Clip("library_buffer_full", "ugb", "library_buffer")
 # marijuana retailer buffer (1000 ft)
 logging.info("Subsetting marijuana retailers from marijuana businesses.")
 arcpy.management.SelectLayerByAttribute(
-    "marijuana_businesses", "NEW_SELECTION", "BusinessType IN ('Retailer')"
+    "marijuana_businesses",
+    "NEW_SELECTION",
+    "BusinessType IN ('Retailer', 'Recreational Retailer')",
 )
 arcpy.management.CopyFeatures("marijuana_businesses", "marijuana_retailers")
 arcpy.management.SelectLayerByAttribute("marijuana_businesses", "CLEAR_SELECTION")
