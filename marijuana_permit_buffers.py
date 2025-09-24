@@ -4,28 +4,26 @@ import os
 import logging
 
 
+# set environmental variables
+# try to parallel process
 arcpy.env.parallelProcessingFactor = "100%"
+# overwrite existing files/gdb
 arcpy.env.overwriteOutput = True
 
 # Customize these variables to paths on your system
+# path to workspace
 path = "O:/GISUserProjects/Departments/GIS_General/Services/marijuana_permit_buffers"
+# path to project
 aprx = os.path.join(path, "marijuana_permit_buffers.aprx")
+# path to project GDB
 gdb = os.path.join(path, "marijuana_permit_buffers.gdb")
-# enterprise database
+# path to enterprise database
 egdb = "O:/Connection (Admin)/Connection docs/OUTRIGGER_COGP_GIS_SDEPublic.sde"
+# path to adult use feature set
 adult_use_gdb = os.path.join(egdb, "SDEPublic.GPGIS.AdultUse")
-PROJECT_DIR = "C:/Users/erose/projects/marijuana_permit_buffers"
-GDB_NAME = "marijuana_permit_buffers.gdb"
-# WORKSPACE = os.path.join(PROJECT_DIR, GDB_NAME)
-WORKSPACE = (
-    "C:/Users/erose/projects/marijuana_permit_buffers/marijuana_permit_buffers.gdb"
-)
-ARCGIS_PROJECT = (
-    "C:/Users/erose/projects/marijuana_permit_buffers/marijuana_permit_buffers.aprx"
-)
-LOG_FILE = "P:/marijuana_permit_buffers.log"
 
 # format log messages to include time before message
+LOG_FILE = "P:/marijuana_permit_buffers.log"
 logging.basicConfig(
     format="%(asctime)s %(message)s",
     datefmt="%m/%d/%Y %I:%M:%S %p",
@@ -35,7 +33,12 @@ logging.basicConfig(
 logging.info("environmental variables loaded")
 
 # create gbd to host project layers
-arcpy.management.CreateFileGDB(path, GDB_NAME)
+if arcpy.Exists(gdb):
+    arcpy.management.Delete(gdb)
+
+if not arcpy.Exists(gdb):
+    arcpy.management.CreateFileGDB(path, "marijuana_permit_buffers.gdb")
+
 # set new gdb as workspace
 arcpy.env.workspace = gdb
 
@@ -44,54 +47,101 @@ aprx = arcpy.mp.ArcGISProject(aprx)
 
 
 # helper functions
-def field_map(fms, lyr, from_name, to_name, rule="First"):
+def field_map(fms, lyr, from_name, to_name, alias=None, rule=None):
+    """
+    Populates field map `fms` with a mapping of `from_name` in `lyr` into `to_name` using `rule`.
+
+    Use this function to cherry-pick fields from a source layer (e.g. in a spatial join) for inclusion in the output layer.
+    """
     fm = arcpy.FieldMap()
     fm.addInputField(lyr, from_name)
-    fm.mergeRule = rule
+    if rule:
+        fm.mergeRule = rule
+    else:
+        fm.mergeRule = "First"
     fm_name = fm.outputField
     fm_name.name = to_name
-    fm_name.aliasName = to_name
+    if alias:
+        fm_name.aliasName = alias
+    else:
+        fm_name.aliasName = to_name
     fm.outputField = fm_name
     fms.addFieldMap(fm)
 
 
+# ==============#
+# Layer Sources #
+# ==============#
+
 # copy layers from city database to local gdb
-# defensive copies for editing and publishing
 logging.info("Importing layers from SDE database.")
+# path names to layers
+og_city_limits = os.path.join(egdb, "SDEPublic.GPGIS.reg_CITYLIMITS")
+og_library = os.path.join(adult_use_gdb, "SDEPublic.GPGIS.Library")
 og_marijuana_businesses = os.path.join(
     egdb, "SDEPublic.GPGIS.MarijuanaBusinesses/SDEPublic.GPGIS.MarijuanaBusinesses"
 )
-# og_daycare_facilities = "O:/Connection (Admin)/Connection docs/OUTRIGGER_COGP_GIS_SDEPublic.sde/SDEPublic.GPGIS.MarijuanaBusinesses/SDEPublic.GPGIS.DaycareFacilities"
-# og_licensed_daycares = "O:/GISUserProjects/Users/ErikRose/marijuana_adult_use/marijuana_adult_use.gdb/licensed_daycares_confirmed"
-# og_industrial_zone_schools = "O:/Connection (Admin)/Connection docs/OUTRIGGER_COGP_GIS_SDEPublic.sde/SDEPublic.GPGIS.MarijuanaBusinesses/SDEPublic.GPGIS.IndustrialZoneSchools"
-# og_recreational_facilities = "O:/Connection (Admin)/Connection docs/OUTRIGGER_COGP_GIS_SDEPublic.sde/SDEPublic.GPGIS.AdultUse/SDEPublic.GPGIS.CommRecFacilities"
+og_parks = os.path.join(egdb, "SDEPublic.GPGIS.land_PARKSANDGREENSPACE")
 og_recreational_facilities = os.path.join(
     adult_use_gdb, "SDEPublic.GPGIS.CommRecFacilities"
 )
-og_library = os.path.join(adult_use_gdb, "SDEPublic.GPGIS.Library")
-og_parks = os.path.join(egdb, "SDEPublic.GPGIS.land_PARKSANDGREENSPACE")
-# og_residential_zones = os.path.join(adult_use_gdb, "SDEPublic.GPGIS.ResidentialZones")
 og_schools = os.path.join(adult_use_gdb, "SDEPublic.GPGIS.Schools")
-og_ugb = os.path.join(egdb, "SDEPublic.GPGIS.reg_UGB2014")
-og_zoning = os.path.join(egdb, "SDEPublic.GPGIS.plan_ZONINGDISTRICT")
 # switch to county version of tax parcels
 og_taxlots = os.path.join(egdb, "SDEPublic.GPGIS.JoCo_FS_Export_1")
-og_city_limits = os.path.join(egdb, "SDEPublic.GPGIS.reg_CITYLIMITS")
+og_ugb = os.path.join(egdb, "SDEPublic.GPGIS.reg_UGB2014")
+og_zoning = os.path.join(egdb, "SDEPublic.GPGIS.plan_ZONINGDISTRICT")
 
-# arcpy.CopyFeatures_management(og_residential_zones, "residential_zones")
-arcpy.CopyFeatures_management(og_recreational_facilities, "recreational_facilities")
-arcpy.CopyFeatures_management(og_parks, "parks")
-arcpy.CopyFeatures_management(og_schools, "schools")
-# arcpy.CopyFeatures_management(og_industrial_zone_schools, "industrial_zone_schools")
-# arcpy.CopyFeatures_management(og_daycare_facilities, "daycare_facilities")
-# arcpy.CopyFeatures_management(og_licensed_daycares, "licensed_daycares")
-arcpy.CopyFeatures_management(og_library, "library")
-arcpy.CopyFeatures_management(og_marijuana_businesses, "marijuana_businesses")
-arcpy.CopyFeatures_management(og_ugb, "ugb")
-arcpy.CopyFeatures_management(og_zoning, "zoning")
-arcpy.CopyFeatures_management(og_taxlots, "taxlots")
-arcpy.CopyFeatures_management(og_city_limits, "city_limits")
+# defensive copies for editing and publishing
+# project into target WKID
+arcpy.management.Project(
+    og_city_limits,
+    "city_limits",
+    arcpy.SpatialReference("OCRS_Grants_Pass-Ashland_NAD_1983_2011_TM_Meters"),
+)
+arcpy.management.Project(
+    og_library,
+    "libraries",
+    arcpy.SpatialReference("OCRS_Grants_Pass-Ashland_NAD_1983_2011_TM_Meters"),
+)
+arcpy.management.Project(
+    og_marijuana_businesses,
+    "marijuana_businesses",
+    arcpy.SpatialReference("OCRS_Grants_Pass-Ashland_NAD_1983_2011_TM_Meters"),
+)
+arcpy.management.Project(
+    og_parks,
+    "parks",
+    arcpy.SpatialReference("OCRS_Grants_Pass-Ashland_NAD_1983_2011_TM_Meters"),
+)
+arcpy.management.Project(
+    og_recreational_facilities,
+    "recreational_facilities",
+    arcpy.SpatialReference("OCRS_Grants_Pass-Ashland_NAD_1983_2011_TM_Meters"),
+)
+arcpy.management.Project(
+    og_schools,
+    "schools",
+    arcpy.SpatialReference("OCRS_Grants_Pass-Ashland_NAD_1983_2011_TM_Meters"),
+)
+arcpy.management.Project(
+    og_taxlots,
+    "taxlots",
+    arcpy.SpatialReference("OCRS_Grants_Pass-Ashland_NAD_1983_2011_TM_Meters"),
+)
+arcpy.management.Project(
+    og_ugb,
+    "ugb",
+    arcpy.SpatialReference("OCRS_Grants_Pass-Ashland_NAD_1983_2011_TM_Meters"),
+)
+arcpy.management.Project(
+    og_zoning,
+    "zoning",
+    arcpy.SpatialReference("OCRS_Grants_Pass-Ashland_NAD_1983_2011_TM_Meters"),
+)
 
+# ===============#
+# Buffer Sources #
+# ===============#
 
 # developed parks
 park_names = [
@@ -125,16 +175,11 @@ arcpy.management.CopyFeatures("zoning", "residential_zones")
 
 
 # read csv of daycares from OCC
-# intable = "c:/users/erose/projects/marijuana_permit_buffers/licensed_daycares.csv"
 intable = os.path.join(path, "licensed_daycares.csv")
-# arcpy.management.MakeTableView(intable, "licensed_daycares_tbl")
 arcpy.conversion.ExportTable(
     intable,
     os.path.join(gdb, "daycares_tbl"),
 )
-# match OCC address to parcel situs address
-# if addr == "1252 E VIEW PL":
-#     addr = "1252 EAST VIEW PL"
 
 # change subaddresses to the parcel situs address
 # match spelling of directionals etc exactly the parcel situs
@@ -175,15 +220,6 @@ arcpy.management.CalculateField(
 logging.info("Joining daycares with tax parcels by situs addresses.")
 arcpy.management.AddJoin("daycares_tbl", "address", "taxlots", "SITUS")
 
-fc = "daycares_tbl"
-fields = [
-    "daycares_tbl.License",
-    "daycares_tbl.License_Type",
-    "daycares_tbl.Facility_Name",
-    "daycares_tbl.Facility_Address",
-    "taxlots.MAPNUM",
-]
-
 # southern oregon head start redwood center located on 360627D000010100
 # remove other map numbers associated with Rogue community college
 rogue_lots = ["360627A0001000", "360627AD001400", "360627AD001600", "360627A0001001"]
@@ -222,7 +258,6 @@ logging.info("Selecting schools large enough to meet the municipal code requirem
 arcpy.management.SelectLayerByAttribute("schools", "NEW_SELECTION", exclude_schools)
 arcpy.management.CopyFeatures("schools", "schools_subset")
 
-# field map for spatial join of schools to zoning
 logging.info("Building field map for spatial join of schools to zoning.")
 fms = arcpy.FieldMappings()
 field_map(fms, "schools_subset", "SCHOOL_NAM", "Name")
@@ -232,35 +267,52 @@ field_map(fms, "schools_subset", "GRADE", "Grade")
 field_map(fms, "zoning", "ZONECLASS", "ZoneClass")
 field_map(fms, "zoning", "ZONEDESC", "ZoneDescription")
 
-# spatial join of schools to zoning
 logging.info("Joining zoning fields to schools layer.")
 arcpy.analysis.SpatialJoin(
     "schools_subset",
     "zoning",
     "schools_zoned",
-    "#",
-    "#",
+    "JOIN_ONE_TO_ONE",
+    "KEEP_ALL",
     fms,
     "HAVE_THEIR_CENTER_IN",
 )
 
-# school in industrial zoning
+# The join failed to identify zones for two schools, showing "null", which breaks the flow
+# manually fill it in for now
+
+industrial_schools = "Name IN ('Gladiola Campus')"
+logging.info("Selecting industrial schools to manually set zoning.")
+arcpy.management.SelectLayerByAttribute(
+    "schools_zoned", "NEW_SELECTION", industrial_schools
+)
+arcpy.management.CalculateField("schools_zoned", "ZoneClass", "'BP'", "ARCADE")
+
+commercial_schools = "Name IN ('Brighton Academy')"
+logging.info("Selecting general commerical schools to manually set zoning.")
+arcpy.management.SelectLayerByAttribute(
+    "schools_zoned", "NEW_SELECTION", commercial_schools
+)
+arcpy.management.CalculateField("schools_zoned", "ZoneClass", "'GC'", "ARCADE")
+
+
 logging.info("Subsetting schools in industrial zoning.")
 arcpy.management.SelectLayerByAttribute(
     "schools_zoned", "NEW_SELECTION", "ZoneClass IN ('I', 'IP', 'BP')"
 )
 arcpy.management.CopyFeatures("schools_zoned", "schools_industrial")
 
-# schools not in industrial zoning
 logging.info("Subsetting schools not in industrial zoning.")
 arcpy.management.SelectLayerByAttribute(
     "schools_zoned", "NEW_SELECTION", "ZoneClass NOT IN ('I', 'IP', 'BP')"
 )
 arcpy.management.CopyFeatures("schools_zoned", "schools_nonindustrial")
 
-# exclusion buffers
+# =================#
+# Exclusion Zones #
+# =================#
+
 logging.info("Building permit exclusion area from buffers.")
-# residential zone buffer (200 ft)
 logging.info("Buffering 200 ft from residential zones.")
 arcpy.analysis.Buffer(
     "residential_zones",
@@ -271,7 +323,6 @@ arcpy.analysis.Buffer(
     "ALL",
 )
 arcpy.analysis.Clip("residential_zones_buffer_full", "ugb", "residential_zones_buffer")
-# commercial and recreational facilities (1000 ft)
 logging.info(
     "Buffering 1000 ft from commercial and residential recreational facilities."
 )
@@ -286,7 +337,6 @@ arcpy.analysis.Buffer(
 arcpy.analysis.Clip(
     "recreational_facilities_buffer_full", "ugb", "recreational_facilities_buffer"
 )
-# developed parks buffer (1000 ft)
 logging.info("Buffering 1000 ft from developed parks.")
 arcpy.analysis.Buffer(
     "developed_parks",
@@ -298,7 +348,6 @@ arcpy.analysis.Buffer(
 )
 arcpy.analysis.Clip("developed_parks_buffer_full", "ugb", "developed_parks_buffer")
 
-# schools buffer (1000 ft)
 logging.info("Buffering 1000 ft from schools not in industrial zoning.")
 arcpy.analysis.Buffer(
     "schools_nonindustrial",
@@ -311,7 +360,6 @@ arcpy.analysis.Buffer(
 arcpy.analysis.Clip(
     "schools_nonindustrial_buffer_full", "ugb", "schools_nonindustrial_buffer"
 )
-# industrial schools (1000 ft, 500 ft for producers and processors)
 logging.info("Buffering 1000 ft from schools in industrial zoning.")
 arcpy.analysis.Buffer(
     "schools_industrial",
@@ -350,9 +398,9 @@ arcpy.analysis.Clip("licensed_daycares_buffer_full", "ugb", "licensed_daycares_b
 # library buffer (1000 ft)
 logging.info("Buffering 1000 ft from libraries.")
 arcpy.analysis.Buffer(
-    "library", "library_buffer_full", "1000 Feet", "FULL", "ROUND", "ALL"
+    "libraries", "libraries_buffer_full", "1000 Feet", "FULL", "ROUND", "ALL"
 )
-arcpy.analysis.Clip("library_buffer_full", "ugb", "library_buffer")
+arcpy.analysis.Clip("libraries_buffer_full", "ugb", "libraries_buffer")
 # marijuana retailer buffer (1000 ft)
 logging.info("Subsetting marijuana retailers from marijuana businesses.")
 arcpy.management.SelectLayerByAttribute(
@@ -388,7 +436,7 @@ arcpy.analysis.Union(
         "schools_nonindustrial_buffer",
         "schools_industrial_buffer_1000",
         "licensed_daycares_buffer",
-        "library_buffer",
+        "libraries_buffer",
         "marijuana_retailers_buffer",
     ],
     "exclusion_area_retailers_union",
@@ -407,7 +455,7 @@ arcpy.analysis.Union(
         "schools_nonindustrial_buffer",
         "schools_industrial_buffer_500",
         "licensed_daycares_buffer",
-        "library_buffer",
+        "libraries_buffer",
         "marijuana_businesses",
     ],
     "exclusion_area_producers_union",
@@ -428,7 +476,7 @@ arcpy.analysis.Union(
         "schools_nonindustrial_buffer",
         "schools_industrial_buffer_1000",
         "licensed_daycares_buffer",
-        "library_buffer",
+        "libraries_buffer",
         "marijuana_businesses",
     ],
     "exclusion_area_wholesalers_union",
@@ -468,7 +516,7 @@ Basic data for pre-planning purposes, not to be relied upon for professional ser
 """
 contact_info = "City of Grants Pass"
 
-permissible_retailers_path = WORKSPACE + "/permissible_area_retailers"
+permissible_retailers_path = os.path.join(gdb, "permissible_area_retailers")
 lyr_md = md.Metadata()
 lyr_md.title = "Potentially Permissible Area Marijuana Retail Business"
 lyr_md.tags = "marijuana business permitting, planning"
@@ -495,7 +543,7 @@ if not tgt_item_md.isReadOnly:
     tgt_item_md.save()
 
 
-permissible_wholesalers_path = WORKSPACE + "/permissible_area_wholesalers"
+permissible_wholesalers_path = os.path.join(gdb, "permissible_area_wholesalers")
 lyr_md = md.Metadata()
 lyr_md.title = "Potentially Permissible Area Marijuana Wholesalers Processing Sites and Medical Dispensaries"
 lyr_md.tags = "marijuana business permitting, planning"
@@ -520,7 +568,7 @@ if not tgt_item_md.isReadOnly:
     tgt_item_md.copy(lyr_md)
     tgt_item_md.save()
 
-permissible_producers_path = WORKSPACE + "/permissible_area_producers"
+permissible_producers_path = os.path.join(gdb, "permissible_area_producers")
 lyr_md = md.Metadata()
 lyr_md.title = "Potentially Permissible Area Marijuana Producers & Processors"
 lyr_md.tags = "marijuana business permitting, planning"
@@ -546,7 +594,7 @@ if not tgt_item_md.isReadOnly:
     tgt_item_md.copy(lyr_md)
     tgt_item_md.save()
 
-marijuana_businesses_path = WORKSPACE + "/marijuana_businesses"
+marijuana_businesses_path = os.path.join(gdb, "marijuana_businesses")
 lyr_md = md.Metadata()
 lyr_md.title = "Marijuana Businesses"
 lyr_md.tags = "marijuana business permitting, planning"
@@ -568,7 +616,7 @@ if not tgt_item_md.isReadOnly:
     tgt_item_md.copy(lyr_md)
     tgt_item_md.save()
 
-marijuana_retailers_path = WORKSPACE + "/marijuana_retailers"
+marijuana_retailers_path = os.path.join(gdb, "marijuana_retailers")
 lyr_md = md.Metadata()
 lyr_md.title = "Marijuana Retailers"
 lyr_md.tags = "marijuana business permitting, planning"
@@ -590,7 +638,7 @@ if not tgt_item_md.isReadOnly:
     tgt_item_md.copy(lyr_md)
     tgt_item_md.save()
 
-marijuana_retailers_buffer_path = WORKSPACE + "/marijuana_retailers_buffer"
+marijuana_retailers_buffer_path = os.path.join(gdb, "marijuana_retailers_buffer")
 lyr_md = md.Metadata()
 lyr_md.title = "Marijuana Retailers Buffer 1000'"
 lyr_md.tags = "marijuana business permitting, planning"
@@ -610,7 +658,7 @@ if not tgt_item_md.isReadOnly:
     tgt_item_md.copy(lyr_md)
     tgt_item_md.save()
 
-licensed_daycares_path = WORKSPACE + "/licensed_daycares"
+licensed_daycares_path = os.path.join(gdb, "licensed_daycares")
 lyr_md = md.Metadata()
 lyr_md.title = "Licensed Daycare Facilities"
 lyr_md.tags = "marijuana business permitting, adult use permitting, planning"
@@ -625,7 +673,7 @@ if not tgt_item_md.isReadOnly:
     tgt_item_md.copy(lyr_md)
     tgt_item_md.save()
 
-lyr_path = WORKSPACE + "/licensed_daycares_buffer"
+lyr_path = os.path.join(gdb, "licensed_daycares_buffer")
 lyr_md = md.Metadata()
 lyr_md.title = "Licensed Daycare Facilities Buffer 1000'"
 lyr_md.tags = "marijuana business permitting, adult use permitting, planning"
@@ -681,7 +729,7 @@ if not tgt_item_md.isReadOnly:
     tgt_item_md.copy(lyr_md)
     tgt_item_md.save()
 
-lyr_path = WORKSPACE + "/schools_nonindustrial"
+lyr_path = os.path.join(gdb, "schools_nonindustrial")
 lyr_md = md.Metadata()
 lyr_md.title = "Schools - Nonindustrial Zoning"
 lyr_md.tags = "marijuana business permitting, adult use permitting, planning"
@@ -694,7 +742,7 @@ if not tgt_item_md.isReadOnly:
     tgt_item_md.copy(lyr_md)
     tgt_item_md.save()
 
-lyr_path = WORKSPACE + "/schools_nonindustrial_buffer"
+lyr_path = os.path.join(gdb, "schools_nonindustrial_buffer")
 lyr_md = md.Metadata()
 lyr_md.title = "Schools Buffer 1000' - Nonindustrial Zoning"
 lyr_md.tags = "marijuana business permitting, adult use permitting, planning"
@@ -750,7 +798,7 @@ if not tgt_item_md.isReadOnly:
     tgt_item_md.copy(lyr_md)
     tgt_item_md.save()
 
-lyr_path = WORKSPACE + "/schools_industrial"
+lyr_path = os.path.join(gdb, "schools_industrial")
 lyr_md = md.Metadata()
 lyr_md.title = "Schools - Industrial Zoning"
 lyr_md.tags = "marijuana business permitting, adult use permitting, planning"
@@ -763,7 +811,7 @@ if not tgt_item_md.isReadOnly:
     tgt_item_md.copy(lyr_md)
     tgt_item_md.save()
 
-lyr_path = WORKSPACE + "/schools_industrial_buffer_1000"
+lyr_path = os.path.join(gdb, "schools_industrial_buffer_1000")
 lyr_md = md.Metadata()
 lyr_md.title = "Schools Buffer 1000' - Industrial Zoning"
 lyr_md.tags = "marijuana business permitting, adult use permitting, planning"
@@ -819,7 +867,7 @@ if not tgt_item_md.isReadOnly:
     tgt_item_md.copy(lyr_md)
     tgt_item_md.save()
 
-lyr_path = WORKSPACE + "/schools_industrial_buffer_500"
+lyr_path = os.path.join(gdb, "schools_industrial_buffer_500")
 lyr_md = md.Metadata()
 lyr_md.title = "Schools Buffer 500' - Industrial Zoning"
 lyr_md.tags = "marijuana business permitting, adult use permitting, planning"
@@ -875,7 +923,7 @@ if not tgt_item_md.isReadOnly:
     tgt_item_md.copy(lyr_md)
     tgt_item_md.save()
 
-lyr_path = WORKSPACE + "/residential_zones"
+lyr_path = os.path.join(gdb, "residential_zones")
 lyr_md = md.Metadata()
 lyr_md.title = "Residential Zones"
 lyr_md.tags = "marijuana business permitting, adult use permitting, planning"
@@ -888,7 +936,7 @@ if not tgt_item_md.isReadOnly:
     tgt_item_md.copy(lyr_md)
     tgt_item_md.save()
 
-lyr_path = WORKSPACE + "/residential_zones_buffer"
+lyr_path = os.path.join(gdb, "residential_zones_buffer")
 lyr_md = md.Metadata()
 lyr_md.title = "Residential Zones Buffer 200'"
 lyr_md.tags = "marijuana business permitting, adult use permitting, planning"
@@ -934,7 +982,7 @@ if not tgt_item_md.isReadOnly:
     tgt_item_md.copy(lyr_md)
     tgt_item_md.save()
 
-lyr_path = WORKSPACE + "/recreational_facilities"
+lyr_path = os.path.join(gdb, "recreational_facilities")
 lyr_md = md.Metadata()
 lyr_md.title = "Recreational Facilities"
 lyr_md.tags = "marijuana business permitting, adult use permitting, planning"
@@ -947,7 +995,7 @@ if not tgt_item_md.isReadOnly:
     tgt_item_md.copy(lyr_md)
     tgt_item_md.save()
 
-lyr_path = WORKSPACE + "/recreational_facilities_buffer"
+lyr_path = os.path.join(gdb, "recreational_facilities_buffer")
 lyr_md = md.Metadata()
 lyr_md.title = "Recreational Facilities Buffer 1000'"
 lyr_md.tags = "marijuana business permitting, adult use permitting, planning"
@@ -1003,9 +1051,9 @@ if not tgt_item_md.isReadOnly:
     tgt_item_md.copy(lyr_md)
     tgt_item_md.save()
 
-lyr_path = WORKSPACE + "/library"
+lyr_path = os.path.join(gdb, "libraries")
 lyr_md = md.Metadata()
-lyr_md.title = "Library"
+lyr_md.title = "Libraries"
 lyr_md.tags = "marijuana business permitting, adult use permitting, planning"
 lyr_md.summary = (
     "Property boundary of the public library for the City of Grants Pass, Oregon."
@@ -1018,9 +1066,9 @@ if not tgt_item_md.isReadOnly:
     tgt_item_md.copy(lyr_md)
     tgt_item_md.save()
 
-lyr_path = WORKSPACE + "/library_buffer"
+lyr_path = os.path.join(gdb, "libraries_buffer")
 lyr_md = md.Metadata()
-lyr_md.title = "Library Buffer 1000'"
+lyr_md.title = "Libraries Buffer 1000'"
 lyr_md.tags = "marijuana business permitting, adult use permitting, planning"
 lyr_md.summary = "A 1000' foot buffer around the property line for the public library, used for marijuana business and adult use permitting."
 lyr_md.description = """
@@ -1074,7 +1122,7 @@ if not tgt_item_md.isReadOnly:
     tgt_item_md.copy(lyr_md)
     tgt_item_md.save()
 
-lyr_path = WORKSPACE + "/developed_parks"
+lyr_path = os.path.join(gdb, "developed_parks")
 lyr_md = md.Metadata()
 lyr_md.title = "Developed Parks"
 lyr_md.tags = "marijuana business permitting, adult use permitting, planning"
@@ -1087,7 +1135,7 @@ if not tgt_item_md.isReadOnly:
     tgt_item_md.copy(lyr_md)
     tgt_item_md.save()
 
-lyr_path = WORKSPACE + "/developed_parks_buffer"
+lyr_path = os.path.join(gdb, "developed_parks_buffer")
 lyr_md = md.Metadata()
 lyr_md.title = "Developed Parks Buffer 1000'"
 lyr_md.tags = "marijuana business permitting, adult use permitting, planning"
