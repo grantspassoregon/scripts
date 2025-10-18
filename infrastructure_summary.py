@@ -48,8 +48,8 @@ og_sewer_lateral = "O:/Connection (Admin)/Connection docs/OUTRIGGER_COGP_GIS_SDE
 og_storm_gravity = "O:/Connection (Admin)/Connection docs/OUTRIGGER_COGP_GIS_SDEPublic.sde/SDEPublic.GPGIS.swGravityMain"
 og_storm_drain = "O:/Connection (Admin)/Connection docs/OUTRIGGER_COGP_GIS_SDEPublic.sde/SDEPublic.GPGIS.swOpenDrain"
 og_storm_culvert = "O:/Connection (Admin)/Connection docs/OUTRIGGER_COGP_GIS_SDEPublic.sde/SDEPublic.GPGIS.swCulvert"
-# og_streets = "https://gis.ecso911.com/server/rest/services/Hosted/Centerline_View/FeatureServer"
-og_streets = "O:/Connection (Admin)/Connection docs/OUTRIGGER_COGP_GIS_SDEPublic.sde/SDEPublic.GPGIS.tran_StreetPavementCL"
+og_streets = "https://gis.ecso911.com/server/rest/services/Hosted/RoadCenterlines_View/FeatureServer/0"
+# og_streets = "O:/Connection (Admin)/Connection docs/OUTRIGGER_COGP_GIS_SDEPublic.sde/SDEPublic.GPGIS.tran_StreetPavementCL"
 og_sidewalks = "O:/Connection (Admin)/Connection docs/OUTRIGGER_COGP_GIS_SDEPublic.sde/SDEPublic.GPGIS.tran_SIDEWALK"
 arcpy.CopyFeatures_management(og_water_mains, "water_mains")
 arcpy.CopyFeatures_management(og_water_laterals, "water_laterals")
@@ -119,7 +119,7 @@ def list_pipe_length(pipe, value, status, owner, ugb, in_ugb=True):
         if in_ugb is False:
             ugb_test = 0
         if (
-            pipe_status == "Active"
+            pipe_status in ["Active", "Under Construction"]
             and pipe_owner == "City of Grants Pass"
             and pipe_ugb == ugb_test
         ):
@@ -138,7 +138,10 @@ def list_street_length(street, value, owner, ugb, in_ugb=True):
         ugb_test = 1
         if in_ugb is False:
             ugb_test = 0
-        if pipe_owner == "City of Grants Pass" and pipe_ugb == ugb_test:
+        if (
+            pipe_owner in ["City of Grants Pass", "GRANTS PASS"]
+            and pipe_ugb == ugb_test
+        ):
             vals.append(val)
     return vals
 
@@ -307,11 +310,34 @@ street_type = [
     "arterial",
 ]
 
+
+# county road classes:
+# 1 - Interstate
+# 2 - State Highway
+# 3 - Major Arterial
+# 4 - Minor Arterial
+# 5 - Major/Urban Collector
+# 6 - Minor Collector
+# 7 - Other Public Road
+# 8 - Unimproved Road
+# 9 - Local Acces Road
+# 10 - Principal Arterial
+# 11 - Major USFS/BLM Road
+# 12 - Other USFS/BLM Road
+# 13 - On & Off Ramp
+# 14 - Private Road
+# 15 - Regional Arterial
+# 99 - Dispatch/911 Use
+
 # sql select statements for SelectLayerByAttribute
-local_street_select = "ROADCLASS = 'Local Street' Or ROADCLASS = 'LOCAL STREET'"
-local_collector_select = "ROADCLASS = 'Local Collector'"
-collector_select = "ROADCLASS = 'Collector' Or ROADCLASS = 'COLLECTOR'"
-arterial_select = "ROADCLASS = 'Arterial' Or ROADCLASS = 'ARTERIAL'"
+local_street_select = "localclass IN ('7', '8', '9', '11', '12', '14', '99')"
+local_collector_select = "localclass = '6'"
+collector_select = "localclass = '5'"
+arterial_select = "localclass in ('3', '4', '10', '15')"
+# local_street_select = "ROADCLASS = 'Local Street' Or ROADCLASS = 'LOCAL STREET'"
+# local_collector_select = "ROADCLASS = 'Local Collector'"
+# collector_select = "ROADCLASS = 'Collector' Or ROADCLASS = 'COLLECTOR'"
+# arterial_select = "ROADCLASS = 'Arterial' Or ROADCLASS = 'ARTERIAL'"
 
 # dictionary key=street type, value=select statement
 street_dict = {}
@@ -332,8 +358,8 @@ def streets_ugb(street_type, streets="streets"):
 
     # field map for street_type
     fms = arcpy.FieldMappings()
-    field_map(fms, street_type, "AssetOwner", "owner", "First")
-    field_map(fms, street_type, "FULLNAME", "id", "First")
+    field_map(fms, street_type, "st_owner", "owner", "First")
+    field_map(fms, street_type, "st_label", "id", "First")
 
     logging.info("Counting %s within UGB.", street_type)
     arcpy.analysis.SpatialJoin(
