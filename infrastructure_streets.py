@@ -1,10 +1,8 @@
 import arcpy
 from arcpy import env
-from sympy import symbols
 import sympy.physics.units as u
 from sympy.physics.units.systems import SI
-from sympy.physics.units import length, meter, foot, mile, kilometer, convert_to
-from sympy.physics.units.systems.si import dimsys_SI
+from sympy.physics.units import mile, kilometer, convert_to
 import pandas
 import logging
 
@@ -37,10 +35,12 @@ env.workspace = WORKSPACE
 logging.info("Importing layers from local database.")
 og_streets = "c:/users/erose/projects/infrastructure/infrastructure.gdb/streets"
 og_ugb = "O:/Connection (Admin)/Connection docs/OUTRIGGER_COGP_GIS_SDEPublic.sde/SDEPublic.GPGIS.reg_UGB2014"
-og_city = "O:/Connection (Admin)/Connection docs/OUTRIGGER_COGP_GIS_SDEPublic.sde/SDEPublic.GPGIS.reg_CITYLIMITS2023"
-arcpy.CopyFeatures_management(og_streets, "streets")
+og_city = "O:/Connection (Admin)/Connection docs/OUTRIGGER_COGP_GIS_SDEPublic.sde/SDEPublic.GPGIS.reg_CITYLIMITS"
+# arcpy.CopyFeatures_management(og_streets, "streets")
 arcpy.CopyFeatures_management(og_ugb, "ugb")
 arcpy.CopyFeatures_management(og_ugb, "city_limits")
+
+arcpy.analysis.PairwiseClip(og_streets, "ugb", "streets")
 
 # open arcpro project
 aprx = arcpy.mp.ArcGISProject(ARCGIS_PROJECT)
@@ -75,7 +75,7 @@ def list_field(fc, field_val, field_type=None, select_type=None):
             SI.set_quantity_scale_factor(dist, val * u.foot)
             val = dist
             print(val)
-        if field_type == None:
+        if field_type is None:
             vals.append(val)
         else:
             val_type = row.getValue(field_type)
@@ -91,7 +91,7 @@ def list_street_length_city(street, value, city, in_city=True):
         val = row.getValue(value)
         street_city = row.getValue(city)
         city_test = 1
-        if in_city == False:
+        if in_city is False:
             city_test = 0
         if street_city == city_test:
             vals.append(val)
@@ -107,7 +107,7 @@ def list_street_length_city_city_owned(street, value, owner, city, in_city=True)
         logging.debug(street_owner == "GRANTS PASS")
         street_city = row.getValue(city)
         city_test = 1
-        if in_city == False:
+        if in_city is False:
             city_test = 0
         if street_owner == "GRANTS PASS" and street_city == city_test:
             vals.append(val)
@@ -121,7 +121,7 @@ def list_street_length_ugb(street, value, ugb, in_ugb=True):
         val = row.getValue(value)
         street_ugb = row.getValue(ugb)
         ugb_test = 1
-        if in_ugb == False:
+        if in_ugb is False:
             ugb_test = 0
         if street_ugb == ugb_test:
             vals.append(val)
@@ -137,7 +137,7 @@ def list_street_length_ugb_city_owned(street, value, owner, ugb, in_ugb=True):
         logging.debug(street_owner == "GRANTS PASS")
         street_ugb = row.getValue(ugb)
         ugb_test = 1
-        if in_ugb == False:
+        if in_ugb is False:
             ugb_test = 0
         if street_owner == "GRANTS PASS" and street_ugb == ugb_test:
             vals.append(val)
@@ -173,13 +173,31 @@ street_type = [
     "blm",
 ]
 
+# county road classes:
+# 1 - Interstate
+# 2 - State Highway
+# 3 - Major Arterial
+# 4 - Minor Arterial
+# 5 - Major/Urban Collector
+# 6 - Minor Collector
+# 7 - Other Public Road
+# 8 - Unimproved Road
+# 9 - Local Acces Road
+# 10 - Principal Arterial
+# 11 - Major USFS/BLM Road
+# 12 - Other USFS/BLM Road
+# 13 - On & Off Ramp
+# 14 - Private Road
+# 15 - Regional Arterial
+# 99 - Dispatch/911 Use
 # sql select statements for SelectLayerByAttribute
-local_street_select = "localtype IN ('7', '8', '9', '14', '0', '99')"
-local_collector_select = "localtype IN ('6')"
-collector_select = "localtype IN ('5')"
-arterial_select = "localtype IN ('3', '4', '10')"
-highway_select = "localtype IN ('1', '2')"
-blm_select = "localtype IN ('11', '12')"
+
+local_street_select = "localclass IN ('7', '8', '9', '14', '0', '99')"
+local_collector_select = "localclass IN ('6')"
+collector_select = "localclass IN ('5')"
+arterial_select = "localclass IN ('3', '4', '10', '15')"
+highway_select = "localclass IN ('1', '2', '13')"
+blm_select = "localclass IN ('11', '12')"
 
 # dictionary key=street type, value=select statement
 street_dict = {}
@@ -203,7 +221,7 @@ def streets_city(street_type, streets="streets"):
     # field map for street_type
     fms = arcpy.FieldMappings()
     field_map(fms, street_type, "st_owner", "owner", "First")
-    field_map(fms, street_type, "name", "id", "First")
+    field_map(fms, street_type, "st_label", "id", "First")
 
     logging.info("Counting %s within city.", street_type)
     arcpy.analysis.SpatialJoin(
@@ -229,7 +247,7 @@ def streets_ugb(street_type, streets="streets"):
     # field map for street_type
     fms = arcpy.FieldMappings()
     field_map(fms, street_type, "st_owner", "owner", "First")
-    field_map(fms, street_type, "name", "id", "First")
+    field_map(fms, street_type, "st_label", "id", "First")
 
     logging.info("Counting %s within UGB.", street_type)
     arcpy.analysis.SpatialJoin(
