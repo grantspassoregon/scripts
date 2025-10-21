@@ -119,7 +119,8 @@ def list_pipe_length(pipe, value, status, owner, ugb, in_ugb=True):
         if in_ugb is False:
             ugb_test = 0
         if (
-            pipe_status in ["Active", "Under Construction"]
+            # pipe_status == "Active"
+            pipe_status in ["Active", "In Construction"]
             and pipe_owner == "City of Grants Pass"
             and pipe_ugb == ugb_test
         ):
@@ -330,7 +331,7 @@ street_type = [
 # 99 - Dispatch/911 Use
 
 # sql select statements for SelectLayerByAttribute
-local_street_select = "localclass IN ('7', '8', '9', '11', '12', '14', '99')"
+local_street_select = "localclass IN ('7', '8', '9', '14', '0', '99')"
 local_collector_select = "localclass = '6'"
 collector_select = "localclass = '5'"
 arterial_select = "localclass in ('3', '4', '10', '15')"
