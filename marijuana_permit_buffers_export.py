@@ -1,3 +1,4 @@
+#! Exports marijuana permitting buffer layers from the local GDB to the Enterprise GDB.
 import arcpy
 import os
 import logging
