@@ -1,5 +1,6 @@
+#! Updates the Water Meters layer on the Enterprise GDB with attribute values from the meter edits table.
+#! Run this script to apply meter edits submitted by water distribution staff to the Enterprise layer.
 import arcpy
-from arcpy import metadata as md
 import logging
 import os
 
