@@ -2,40 +2,50 @@
 import arcpy
 import datetime
 import itertools
+import logging
+from typing import Optional
 
 
 def field_map(
-    fms, lyr, from_name: str, to_name: str, alias: str | None = None, rule=None
-):
+    fms: arcpy.FieldMappings,
+    lyr,
+    from_name: str,
+    to_name: str,
+    alias: Optional[str] = None,
+    rule: Optional[str] = None,
+) -> None:
     """
-    Populates field map `fms` with a mapping of `from_name` in `lyr` into `to_name` using `rule`.
+    Adds a field mapping from `from_name` in `lyr` to `to_name` in the output using `rule`.
 
-    Use this function to cherry-pick fields from a source layer (e.g. in a spatial join) for inclusion in the output layer.
-    :param fms: Field mappings object to contain the mapping.
-    :param lyr: Subject layer of the mapping.
-    :param from_name: Name of attribute in subject layer.
-    :type from_name: str
-    :param to_name: Name of attribute in target layer.
-    :type to_name: str
-    :param alias: Target attribute alias (optional).
-    :param rule: Merge rule (default = "First")
-    :return: Adds mapping to provided *fms* as a side effect.
-    :rtype: None
+    :param fms: FieldMappings object to append to.
+    :param lyr: Source layer or feature class.
+    :param from_name: Field name in the source layer.
+    :param to_name: Field name in the target layer.
+    :param alias: Optional alias for the output field.
+    :param rule: Merge rule (default = "First").
     """
-    fm = arcpy.FieldMap()
-    fm.addInputField(lyr, from_name)
-    if rule:
-        fm.mergeRule = rule
-    else:
-        fm.mergeRule = "First"
-    fm_name = fm.outputField
-    fm_name.name = to_name
-    if alias:
-        fm_name.aliasName = alias
-    else:
-        fm_name.aliasName = to_name
-    fm.outputField = fm_name
-    fms.addFieldMap(fm)
+    # Check if the source field exists
+    field_names = [f.name for f in arcpy.ListFields(lyr)]
+    if from_name not in field_names:
+        logging.warning(
+            f"Field '{from_name}' not found in layer '{lyr}'. Skipping mapping to '{to_name}'."
+        )
+        return
+
+    try:
+        fm = arcpy.FieldMap()
+        fm.addInputField(lyr, from_name)
+        fm.mergeRule = rule if rule else "First"  # type: ignore[attr-define]
+
+        output_field = fm.outputField
+        output_field.name = to_name
+        output_field.aliasName = alias if alias else to_name
+        fm.outputField = output_field
+
+        fms.addFieldMap(fm)
+        logging.info(f"Mapped field: {from_name} → {to_name}")
+    except Exception as e:
+        logging.error(f"Failed to map field '{from_name}' to '{to_name}': {e}")
 
 
 def since(lyr, cutoff, id="GlobalID", edit_date="last_edited_date"):
