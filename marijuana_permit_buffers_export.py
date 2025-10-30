@@ -36,11 +36,34 @@ permitting_gdb = os.path.join(egdb, "SDEPublic.GPGIS.MarijuanaPermitting")
 
 
 def export_over(name, source_gdb, target_gdb):
+    """
+    Exports a feature class from a source geodatabase to a target geodatabase.
+    If the target feature class already exists, it will be deleted before export.
+
+    Parameters:
+    - name (str): Name of the feature class to export.
+    - source_gdb (str): Path to the source geodatabase.
+    - target_gdb (str): Path to the target geodatabase.
+
+    Returns:
+    - None
+    """
     source = os.path.join(source_gdb, name)
     target = os.path.join(target_gdb, name)
-    if arcpy.Exists(target):
-        arcpy.management.Delete(target)
-    arcpy.conversion.ExportFeatures(source, target)
+
+    try:
+        if arcpy.Exists(target):
+            arcpy.AddMessage(f"Deleting existing feature class: {target}")
+            logging.info(f"Deleting existing feature class: {target}")
+            arcpy.management.Delete(target)
+
+        arcpy.AddMessage(f"Exporting {source} to {target}")
+        logging.info(f"Exporting {source} to {target}")
+        arcpy.conversion.ExportFeatures(source, target)
+
+    except Exception as e:
+        arcpy.AddError(f"Error exporting {name}: {e}")
+        logging.error(f"Error exporting {name}: {e}")
 
 
 export_over("permissible_area_retailers", gdb, permitting_gdb)
