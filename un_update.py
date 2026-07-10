@@ -70,8 +70,10 @@ ago = now - relativedelta(months=6)
 # un_update.sewer.Valve.update_created(valves, branch)  # type: ignore
 # un_update.sewer.Manhole.update_created(manholes, branch)  # type: ignore
 # un_update.sewer.Fitting.update_created(fittings, branch)  # type: ignore
-# un_update.sewer.GravityMain.update_created(mains, branch)  # type: ignore
-un_update.sewer.ForceMain.update_created(force, branch)  # type: ignore
+# un_update.sewer.DeviceFitting.update_created(fittings, branch)  # type: ignore
+un_update.sewer.GravityMain.update_created(mains, branch)  # type: ignore
+# un_update.sewer.ForceMain.update_created(force, branch)  # type: ignore
+# un_update.sewer.Lateral.update_created(laterals, branch)  # type: ignore
 
 
 fc = arcpy.Describe(branch).catalogPath
