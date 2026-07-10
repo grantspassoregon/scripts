@@ -361,6 +361,7 @@ records.update({"marijuana_permitting": marijuana_permitting})
 records.update({"parking": parking})
 records.update({"parks": parks})
 records.update({"planning": planning})
+records.update({"property": property})
 # records.update({"schools": schools})
 records.update({"stormwater_gn": stormwater_gn})
 records.update({"traffic": traffic})
@@ -380,6 +381,7 @@ short = [
     "marijuana_permitting" "parking",
     "parks",
     "planning",
+    "property",
     "stormwater_gn",
     "traffic",
     "transportation",
